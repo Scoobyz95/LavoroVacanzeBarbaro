@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -10,25 +11,32 @@ public class Controllodeltraffico : MonoBehaviour
     GameObject[] macchine;
     Stopwatch timersemafori;
     public List<GameObject> semafori = new List<GameObject>();
-    public List<GameObject> semafori_segnali = new List<GameObject>();
+
+    // i tipo1 sono verde inizialmente
+    public List<GameObject> semaforitipo1 = new List<GameObject>();
+
+    // i tipo2 sono rossi inizialmente
+    public List<GameObject> semaforitipo2 = new List<GameObject>();
     //diventerà un input
     float speed = 8f;
     float decelerazionesemaforo = 15f;
     float decelerazioneautodavanti = 30f;
     float accelerazione = 15f;
-    
+
     float[] velocita;
-    
+    int[] prossimamossa;
 
     // bisogna sistemare la questione degli assi
     void Start()
     {
         macchine = GameObject.FindGameObjectsWithTag("Macchine");
         velocita = new float[macchine.Length];
+        prossimamossa = new int[macchine.Length];
 
         for (int i = 0; i < macchine.Length; i++)
         {
             velocita[i] = speed;
+            prossimamossa[i] = Random.RandomRange(0, 3);
         }
 
         timersemafori = new Stopwatch();
@@ -45,50 +53,117 @@ public class Controllodeltraffico : MonoBehaviour
     int cont = 1;
     float tempo = 10;
 
-
-    public float emissionIntensity = 5.0f; // Intensità dell'emissione
     Material sferadailluminare;
+
 
     bool rossooverde = true;
     void Update()
     {
-        int layerMaskpassi = 1 << 6;
+
+        Gestionesemafori();
+
+        UnityEngine.Debug.Log(rossooverde);
+
+        if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
+        {
+            //il semaforo passa da Verde a Giallo
+            if (rossooverde)
+            {
+                foreach (GameObject semaforo in semaforitipo1)
+                {
+                    AccendioSpegni("Verde", semaforo, 0f);
+                    AccendioSpegni("Giallo", semaforo, 2f);
+
+                }
+            }
+            else
+            {
+                foreach (GameObject semaforo in semaforitipo2)
+                {
+                    AccendioSpegni("Verde", semaforo, 0f);
+                    AccendioSpegni("Giallo", semaforo, 2f);
+
+                }
+            }
+        }
+        else if (rossooverde)
+        {
+            foreach (GameObject semaforo in semaforitipo1)
+            {
+                Lucisemafori("Verde", semaforo);
+            }
+
+            foreach (GameObject semaforo in semaforitipo2)
+            {
+                Lucisemafori("Rosso", semaforo);
+            }
+        }
+        else
+        {
+            foreach (GameObject semaforo in semaforitipo1)
+            {
+                Lucisemafori("Rosso", semaforo);
+            }
+
+            foreach (GameObject semaforo in semaforitipo2)
+            {
+                Lucisemafori("Verde", semaforo);
+            }
+        }
+         int layerMaskpassi = 1 << 6;
         int layerMasknonpassi = 1 << 7;
         int layerMaskveicolo = 1 << 8;
 
-        
+
         for (int i = 0; i < macchine.Length; i++)
         {
-            Vector3 avanti = macchine[i].transform.forward ;
+            Vector3 avanti = macchine[i].transform.forward;
 
+            //if (macchine[i].transform.rotation.eulerAngles[1] == 90)
+            //{
+            //    avanti = macchine[i].transform.right;
+            //}
+            Vector3 asseruota = macchine[i].transform.right; ;
 
-            //Debug.DrawRay(macchine[i].transform.position, avanti * 14f, Color.red);
-
-
+            UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
             if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
             {
-              
-                
-                    if (velocita[i] > 0)
-                        Rallenta(i, decelerazionesemaforo);
-                
+                if (velocita[i] > 0)
+                    Rallenta(i, decelerazionesemaforo);
             }
             else if (Physics.Raycast(macchine[i].transform.position, avanti, 8f, layerMaskveicolo))
             {
                 if (velocita[i] > 0)
-                Rallenta(i, decelerazioneautodavanti);
-                
+                    Rallenta(i, decelerazioneautodavanti);
+
             }
             else if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMaskpassi))
             {
-                if (timersemafori.Elapsed.TotalSeconds + 3 > tempo * cont)
+                if (timersemafori.Elapsed.TotalSeconds + 1 > tempo * cont)
                 {
                     if (velocita[i] > 0)
                         Rallenta(i, decelerazionesemaforo + 25f);
                 }
-                Accelera(i, accelerazione);
+                else
+                {
+                    switch (prossimamossa[i])
+                    {
+                        case 1:
+                            {
+                                //curva a destra
+                                Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
+                            }
+                            break;
+                        case 2:
+                            {
+                                //curva a sinistra
+                                Curva(macchine[i].transform.position, -macchine[i].transform.right, i, velocita[i]);
+                            }
+                            break;
+                    }
 
-
+                    Accelera(i, accelerazione);
+                }               
             }
             else
             {
@@ -97,40 +172,9 @@ public class Controllodeltraffico : MonoBehaviour
 
             }
 
+            MovimentoRuota(macchine[i].transform, velocita[i] * 1000,asseruota);
             macchine[i].transform.Translate(Vector3.forward * velocita[i] * Time.deltaTime);
         }
-
-        if (rossooverde)
-        {
-            // da continuare
-            //Verde
-            //sferadailluminare = semafori_segnali[0]
-        }
-
-
-        if (timersemafori.Elapsed.TotalSeconds > tempo * cont)
-        {
-            cont++;
-            foreach (GameObject semaforo in semafori)
-            {
-                semaforo.transform.Rotate(Vector3.up, 90);
-
-                
-            }
-
-            
-           
-        }
-        //else if (timersemafori.Elapsed.TotalSeconds > tempo * cont + 2)
-        //{
-        //    cont++;
-        //    foreach (GameObject semaforo in semafori)
-        //    {
-        //        semaforo.transform.Rotate(Vector3.up, -45);
-        //        giallo = false;
-        //    }
-
-        //}
     }
 
     void Rallenta(int i, float decelerazione)
@@ -140,7 +184,7 @@ public class Controllodeltraffico : MonoBehaviour
         {
             velocita[i] = 0;
             Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
-            rb.velocity= Vector3.zero;
+            rb.velocity = Vector3.zero;
         }
     }
 
@@ -152,10 +196,10 @@ public class Controllodeltraffico : MonoBehaviour
 
             if (velocita[i] == 0)
             {
-                
+
                 velocita[i] += accelerazione * Time.deltaTime;
                 rb.AddForce(macchine[i].transform.forward * velocita[i], ForceMode.VelocityChange);
-                
+
             }
             else
             {
@@ -170,5 +214,102 @@ public class Controllodeltraffico : MonoBehaviour
         }
     }
 
+
+
+    void Curva(Vector3 macchina,Vector3 direzione,int i, float velocita)
+    {
+        RaycastHit hit;
+        Physics.Raycast(macchina, direzione, out hit, Mathf.Infinity, 1 << 9);
+
+
+        Transform Originale = macchine[i].transform.parent;
+        Transform pivot = hit.collider.transform;
+
+        macchine[i].transform.parent = pivot;
+        pivot.transform.Rotate(Vector3.up,velocita * Time.deltaTime);
+
+        macchine[i].transform.parent = Originale;
+    }
+
+
+
+    void Gestionesemafori()
+    {
+        if (timersemafori.Elapsed.TotalSeconds > tempo * cont)
+        {
+            cont++;
+            foreach (GameObject semaforo in semafori)
+            {
+                semaforo.transform.Rotate(Vector3.up, 90);
+            }
+            rossooverde = !rossooverde;
+
+            for (int i = 0; i < macchine.Length; i++)
+            {
+                prossimamossa[i] = Random.RandomRange(0, 3);
+            }
+        }
+    }
+
+    void Lucisemafori(string colore, GameObject semaforo)
+    {
+        if(colore == "Rosso") 
+        {
+            AccendioSpegni("Giallo", semaforo, 0f);
+        }
+        else if(colore == "Verde")
+        {
+            AccendioSpegni("Rosso", semaforo, 0f);
+        }
+
+        AccendioSpegni(colore, semaforo, 2f);
+    }
+
+    
+    void AccendioSpegni(string colore, GameObject semaforo, float intensita)
+    {
+        Transform childTransform = semaforo.transform.Find(colore);
+
+        if (childTransform != null)
+        {
+            GameObject childGameObject = childTransform.gameObject;
+            Renderer childRenderer = childGameObject.GetComponent<Renderer>();
+            sferadailluminare = childRenderer.material;
+            UnityEngine.Color emissionColor;
+            if (colore == "Verde")
+            {
+                emissionColor = UnityEngine.Color.green;
+
+            }else if(colore == "Rosso")
+            {
+                emissionColor = UnityEngine.Color.red;
+            }
+            else
+            {
+                emissionColor = UnityEngine.Color.yellow;
+            }
+            sferadailluminare.SetColor("_EmissionColor", emissionColor * intensita);
+        }
+    }
+
+    void MovimentoRuota(Transform macchina, float speed, Vector3 asseruota)
+    {
+        Transform[] ruote = new Transform[4];
+        int cont = 0;
+        foreach (Transform ruota in macchina)
+        {
+            // Controlla se il figlio ha il tag specificato
+            if (ruota.CompareTag("Ruota"))
+            {
+                ruote[cont] = ruota;
+                cont++;
+            }         
+        }
+
+        for (int i = 0; i < ruote.Length; i++)
+        {
+            ruote[i].Rotate(asseruota, speed * Time.deltaTime);
+        }
+    }
 
 }
