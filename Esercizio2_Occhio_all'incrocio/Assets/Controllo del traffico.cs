@@ -36,7 +36,7 @@ public class Controllodeltraffico : MonoBehaviour
         for (int i = 0; i < macchine.Length; i++)
         {
             velocita[i] = speed;
-            prossimamossa[i] = Random.RandomRange(0, 3);
+            prossimamossa[i] = 1;
         }
 
         timersemafori = new Stopwatch();
@@ -61,8 +61,6 @@ public class Controllodeltraffico : MonoBehaviour
     {
 
         Gestionesemafori();
-
-        UnityEngine.Debug.Log(rossooverde);
 
         if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
         {
@@ -126,6 +124,8 @@ public class Controllodeltraffico : MonoBehaviour
             Vector3 asseruota = macchine[i].transform.right; ;
 
             UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
+            
+
             if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
             {
                 if (velocita[i] > 0)
@@ -151,6 +151,7 @@ public class Controllodeltraffico : MonoBehaviour
                         case 1:
                             {
                                 //curva a destra
+                                
                                 Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
                             }
                             break;
@@ -160,9 +161,14 @@ public class Controllodeltraffico : MonoBehaviour
                                 Curva(macchine[i].transform.position, -macchine[i].transform.right, i, velocita[i]);
                             }
                             break;
+                        case 3:
+                            {
+                                Accelera(i, accelerazione);
+                            }
+                            break;
                     }
 
-                    Accelera(i, accelerazione);
+                    
                 }               
             }
             else
@@ -219,16 +225,27 @@ public class Controllodeltraffico : MonoBehaviour
     void Curva(Vector3 macchina,Vector3 direzione,int i, float velocita)
     {
         RaycastHit hit;
-        Physics.Raycast(macchina, direzione, out hit, Mathf.Infinity, 1 << 9);
+        int layerMask = 1 << 9;
+        UnityEngine.Debug.DrawRay(macchina, direzione * 14f, UnityEngine.Color.green);
+        if (Physics.Raycast(macchina, direzione, out hit, 14f, layerMask))
+        {
+            Transform Originale = macchine[i].transform.parent;
+            Transform pivot = hit.collider.transform;
 
 
-        Transform Originale = macchine[i].transform.parent;
-        Transform pivot = hit.collider.transform;
+            //Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
+            //float angoloDiCurvatura = 90 * Time.deltaTime;
+            //Quaternion rotazioneCurva = Quaternion.Euler(0, velocita, 0);
+            //rb.MoveRotation(rb.rotation * rotazioneCurva);
+            macchine[i].transform.parent = pivot;
+            pivot.transform.Rotate(Vector3.up, 90);
 
-        macchine[i].transform.parent = pivot;
-        pivot.transform.Rotate(Vector3.up,velocita * Time.deltaTime);
-
-        macchine[i].transform.parent = Originale;
+            macchine[i].transform.parent = Originale;
+        }
+        else
+        {
+            Accelera(i, accelerazione);
+        }
     }
 
 
@@ -244,10 +261,10 @@ public class Controllodeltraffico : MonoBehaviour
             }
             rossooverde = !rossooverde;
 
-            for (int i = 0; i < macchine.Length; i++)
-            {
-                prossimamossa[i] = Random.RandomRange(0, 3);
-            }
+            //for (int i = 0; i < macchine.Length; i++)
+            //{
+            //    prossimamossa[i] = Random.RandomRange(0, 3);
+            //}
         }
     }
 
