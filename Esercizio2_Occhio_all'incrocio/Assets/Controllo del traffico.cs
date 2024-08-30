@@ -57,6 +57,7 @@ public class Controllodeltraffico : MonoBehaviour
 
 
     bool rossooverde = true;
+    Vector3 direzione;
     void Update()
     {
 
@@ -117,14 +118,24 @@ public class Controllodeltraffico : MonoBehaviour
         {
             Vector3 avanti = macchine[i].transform.forward;
 
+            
+            if (macchine[i].transform.rotation[2] > 0)
+            {
+                direzione = -Vector3.forward;
+            }
+            else
+            {
+                direzione = Vector3.forward;
+            }
+
             //if (macchine[i].transform.rotation.eulerAngles[1] == 90)
             //{
             //    avanti = macchine[i].transform.right;
             //}
-            Vector3 asseruota = macchine[i].transform.forward; ;
+            Vector3 asseruota = macchine[i].transform.right; ;
 
             UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
-            
+
 
             if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
             {
@@ -139,19 +150,20 @@ public class Controllodeltraffico : MonoBehaviour
             }
             else if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMaskpassi))
             {
-                if (timersemafori.Elapsed.TotalSeconds + 1 > tempo * cont)
+                if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
                 {
                     if (velocita[i] > 0)
-                        Rallenta(i, decelerazionesemaforo + 25f);
+                        Rallenta(i, decelerazionesemaforo + 20f);
                 }
                 else
                 {
+                    ///AGGIUNGERE CHE QUANDO SI TROVA DENTRO IL CUBO E SCATTA GIALLO ACCELERI DI MOLTO
                     //switch (prossimamossa[i])
                     //{
                     //    case 1:
                     //        {
                     //            //curva a destra
-                                
+
                     //            Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
                     //        }
                     //        break;
@@ -163,12 +175,12 @@ public class Controllodeltraffico : MonoBehaviour
                     //        break;
                     //    case 3:
                     //        {
-                    //            Accelera(i, accelerazione);
+                    Accelera(i, accelerazione);
                     //        }
                     //        break;
                     //}
 
-                    
+
                 }               
             }
             else
@@ -179,14 +191,14 @@ public class Controllodeltraffico : MonoBehaviour
             }
 
             MovimentoRuota(macchine[i].transform, velocita[i] * 1000,asseruota);
-            macchine[i].transform.Translate(Vector3.forward * velocita[i] * Time.deltaTime);
+            macchine[i].transform.Translate(direzione * velocita[i] * Time.deltaTime);
         }
     }
 
     void Rallenta(int i, float decelerazione)
     {
         velocita[i] -= decelerazione * Time.deltaTime;
-        if (velocita[i] < 0.1f)
+        if (velocita[i] < 0.2f)
         {
             velocita[i] = 0;
             Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
@@ -204,7 +216,7 @@ public class Controllodeltraffico : MonoBehaviour
             {
 
                 velocita[i] += accelerazione * Time.deltaTime;
-                rb.AddForce(macchine[i].transform.forward * velocita[i], ForceMode.VelocityChange);
+                rb.AddForce(direzione * velocita[i], ForceMode.VelocityChange);
 
             }
             else
