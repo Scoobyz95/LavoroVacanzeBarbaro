@@ -26,18 +26,23 @@ public class Controllodeltraffico : MonoBehaviour
     float[] velocita;
     int[] prossimamossa;
 
+    bool[] stacurvando;
+    Transform[][] traiettorie;
     // bisogna sistemare la questione degli assi
     void Start()
     {
         macchine = GameObject.FindGameObjectsWithTag("Macchine");
         velocita = new float[macchine.Length];
         prossimamossa = new int[macchine.Length];
-
-        //for (int i = 0; i < macchine.Length; i++)
-        //{
-        //    velocita[i] = speed;
-        //    prossimamossa[i] = 1;
-        //}
+        stacurvando = new bool[macchine.Length];
+        traiettorie = new Transform[macchine.Length][];
+        for (int i = 0; i < macchine.Length; i++)
+        {
+            velocita[i] = speed;
+            prossimamossa[i] = 1;
+            stacurvando[i] = false;
+            //traiettorie[i] = new Transform[1];
+        }
 
         timersemafori = new Stopwatch();
         timersemafori.Start();
@@ -117,81 +122,109 @@ public class Controllodeltraffico : MonoBehaviour
         for (int i = 0; i < macchine.Length; i++)
         {
             Vector3 avanti = macchine[i].transform.forward;
-
-            
-            if (macchine[i].transform.rotation[2] > 0)
+            if (stacurvando[i])
             {
-                direzione = -Vector3.forward;
+                Curva(i, velocita[i], traiettorie[i]);
+
             }
             else
             {
-                direzione = Vector3.forward;
-            }
-
-            //if (macchine[i].transform.rotation.eulerAngles[1] == 90)
-            //{
-            //    avanti = macchine[i].transform.right;
-            //}
-            Vector3 asseruota = macchine[i].transform.right; ;
-
-            UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
 
 
-            if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
-            {
-                if (velocita[i] > 0)
-                    Rallenta(i, decelerazionesemaforo);
-            }
-            else if (Physics.Raycast(macchine[i].transform.position, avanti, 8f, layerMaskveicolo))
-            {
-                if (velocita[i] > 0)
-                    Rallenta(i, decelerazioneautodavanti);
 
-            }
-            else if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMaskpassi))
-            {
-                if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
+                if (macchine[i].transform.rotation[2] > 0)
                 {
-                    if (velocita[i] > 0)
-                        Rallenta(i, decelerazionesemaforo + 20f);
+                    direzione = -Vector3.forward;
                 }
                 else
                 {
-                    ///AGGIUNGERE CHE QUANDO SI TROVA DENTRO IL CUBO E SCATTA GIALLO ACCELERI DI MOLTO
-                    //switch (prossimamossa[i])
-                    //{
-                    //    case 1:
-                    //        {
-                    //            //curva a destra
+                    direzione = Vector3.forward;
+                }
 
-                    //            Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
-                    //        }
-                    //        break;
-                    //    case 2:
-                    //        {
-                    //            //curva a sinistra
-                    //            Curva(macchine[i].transform.position, -macchine[i].transform.right, i, velocita[i]);
-                    //        }
-                    //        break;
-                    //    case 3:
-                    //        {
+                //if (macchine[i].transform.rotation.eulerAngles[1] == 90)
+                //{
+                //    avanti = macchine[i].transform.right;
+                //}
+                Vector3 asseruota = macchine[i].transform.right; ;
+
+                UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
+
+                RaycastHit hit;
+                if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
+                {
+                    if (velocita[i] > 0)
+                        Rallenta(i, decelerazionesemaforo);
+                }
+                else if (Physics.Raycast(macchine[i].transform.position, avanti, 8f, layerMaskveicolo))
+                {
+                    if (velocita[i] > 0)
+                        Rallenta(i, decelerazioneautodavanti);
+
+                }
+                else if (Physics.Raycast(macchine[i].transform.position, avanti, out hit, 14f, layerMaskpassi))
+                {
+                    if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
+                    {
+                        if (velocita[i] > 0)
+                            Rallenta(i, decelerazionesemaforo + 20f);
+                    }
+                    else
+                    {
+                        ///AGGIUNGERE CHE QUANDO SI TROVA DENTRO IL CUBO E SCATTA GIALLO ACCELERI DI MOLTO
+                        switch (prossimamossa[i])
+                        {
+                            case 1:
+                                {
+                                    //curva a destra
+
+                                    GameObject curva = hit.collider.gameObject;
+
+                                    Transform Waypoints = curva.transform.GetChild(0);
+                                    Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
+                                    Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
+
+                                    for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
+                                    {
+                                        if (!(traiettoriaconpadre[j].tag == "Destra" || traiettoriaconpadre[j].tag == "Sinistra"))
+                                        {
+                                            traiettoria[k] = traiettoriaconpadre[j];
+                                            k++;
+                                        }
+                                    }
+
+                                    stacurvando[i] = true;
+                                    traiettorie[i] = traiettoria;
+                                    Curva(i, velocita[i], traiettoria);
+
+                                }
+                                break;
+                            case 2:
+                                {
+                                    //curva a sinistra
+                                }
+                                break;
+                            case 3:
+                                {
+                                    Accelera(i, accelerazione);
+                                    Accelera(i, accelerazione);
+                                }
+                                break;
+                        }
+
+
+
+                    }
+                }
+                else
+                {
+
                     Accelera(i, accelerazione);
-                    //        }
-                    //        break;
-                    //}
 
+                }
 
-                }               
+                MovimentoRuota(macchine[i].transform, velocita[i] * 1000, asseruota);
+                macchine[i].transform.Translate(direzione * velocita[i] * Time.deltaTime);
             }
-            else
-            {
-
-                Accelera(i, accelerazione);
-
-            }
-
-            MovimentoRuota(macchine[i].transform, velocita[i] * 1000,asseruota);
-            macchine[i].transform.Translate(direzione * velocita[i] * Time.deltaTime);
         }
     }
 
@@ -231,34 +264,48 @@ public class Controllodeltraffico : MonoBehaviour
 
         }
     }
-
-
-
-    void Curva(Vector3 macchina,Vector3 direzione,int i, float velocita)
+    int indice = 0;
+    float[] Distanzamin = { 11f, 6.2f, 1.5f, 2.5f, 5.6f, 8.3f};
+    void Curva(int i, float velocita, Transform[] traiettoria)
     {
-        RaycastHit hit;
-        int layerMask = 1 << 9;
-        UnityEngine.Debug.DrawRay(macchina, direzione * 14f, UnityEngine.Color.green);
-        if (Physics.Raycast(macchina, direzione, out hit, 14f, layerMask))
+        
+        if (indice < traiettoria.Length)
         {
-            Transform Originale = macchine[i].transform.parent;
-            Transform pivot = hit.collider.transform;
+            Transform posizionecorrente = traiettoria[indice];
+            Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position ).normalized;
+            macchine[i].transform.position += Direzione * 8 * Time.deltaTime;
+            Quaternion rotazione = Quaternion.LookRotation(Direzione);
+            macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, 8 * Time.deltaTime);
 
-
-            //Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
-            //float angoloDiCurvatura = 90 * Time.deltaTime;
-            //Quaternion rotazioneCurva = Quaternion.Euler(0, velocita, 0);
-            //rb.MoveRotation(rb.rotation * rotazioneCurva);
-            macchine[i].transform.parent = pivot;
-            pivot.transform.Rotate(Vector3.up, 90);
-
-            macchine[i].transform.parent = Originale;
+            
+            float chill = Vector3.Distance(macchine[i].transform.position, traiettoria[i].position);
+            UnityEngine.Debug.Log(chill);
+            if (chill < Distanzamin[indice])
+            {
+                //Accelera(i, accelerazione);
+                indice++;
+            }
         }
         else
         {
-            Accelera(i, accelerazione);
+            stacurvando[i] = false;
+           
         }
+        //Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
+        //float angoloDiCurvatura = 90 * Time.deltaTime;
+        //Quaternion rotazioneCurva = Quaternion.Euler(0, velocita, 0);
+        ////rb.MoveRotation(rb.rotation * rotazioneCurva);
+        //macchine[i].transform.parent = pivot;
+        //pivot.transform.Rotate(Vector3.up, 90);
+
+
     }
+
+
+
+
+
+
 
 
 
