@@ -33,11 +33,11 @@ public class Controllodeltraffico : MonoBehaviour
         velocita = new float[macchine.Length];
         prossimamossa = new int[macchine.Length];
 
-        for (int i = 0; i < macchine.Length; i++)
-        {
-            velocita[i] = speed;
-            prossimamossa[i] = 1;
-        }
+        //for (int i = 0; i < macchine.Length; i++)
+        //{
+        //    velocita[i] = speed;
+        //    prossimamossa[i] = 1;
+        //}
 
         timersemafori = new Stopwatch();
         timersemafori.Start();
@@ -121,7 +121,7 @@ public class Controllodeltraffico : MonoBehaviour
             //{
             //    avanti = macchine[i].transform.right;
             //}
-            Vector3 asseruota = macchine[i].transform.right; ;
+            Vector3 asseruota = macchine[i].transform.forward; ;
 
             UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
             
@@ -146,27 +146,27 @@ public class Controllodeltraffico : MonoBehaviour
                 }
                 else
                 {
-                    switch (prossimamossa[i])
-                    {
-                        case 1:
-                            {
-                                //curva a destra
+                    //switch (prossimamossa[i])
+                    //{
+                    //    case 1:
+                    //        {
+                    //            //curva a destra
                                 
-                                Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
-                            }
-                            break;
-                        case 2:
-                            {
-                                //curva a sinistra
-                                Curva(macchine[i].transform.position, -macchine[i].transform.right, i, velocita[i]);
-                            }
-                            break;
-                        case 3:
-                            {
-                                Accelera(i, accelerazione);
-                            }
-                            break;
-                    }
+                    //            Curva(macchine[i].transform.position, macchine[i].transform.right, i, velocita[i]);
+                    //        }
+                    //        break;
+                    //    case 2:
+                    //        {
+                    //            //curva a sinistra
+                    //            Curva(macchine[i].transform.position, -macchine[i].transform.right, i, velocita[i]);
+                    //        }
+                    //        break;
+                    //    case 3:
+                    //        {
+                    //            Accelera(i, accelerazione);
+                    //        }
+                    //        break;
+                    //}
 
                     
                 }               
