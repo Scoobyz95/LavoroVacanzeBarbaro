@@ -41,7 +41,7 @@ public class Controllodeltraffico : MonoBehaviour
         for (int i = 0; i < macchine.Length; i++)
         {
             velocita[i] = speed;
-            prossimamossa[i] = Random.Range(0,3);
+            prossimamossa[i] = 2;
             stacurvando[i] = false;
          
             //traiettorie[i] = new Transform[1];
@@ -207,7 +207,7 @@ public class Controllodeltraffico : MonoBehaviour
 
                                         for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
                                         {
-                                            if (!(traiettoriaconpadre[j].tag == "Destra" || traiettoriaconpadre[j].tag == "Sinistra"))
+                                        if (traiettoriaconpadre[j].tag != "Destra")
                                             {
                                                 traiettoria[k] = traiettoriaconpadre[j];
                                                 k++;
@@ -219,11 +219,29 @@ public class Controllodeltraffico : MonoBehaviour
                                         Curva(i, velocita[i], traiettoria);
                                     }
                                     break;
+
                                 case 2:
                                     {
-                                        //curva a sinistra
-                                        Accelera(i, accelerazione);
+                                    //curva a sinistra
+                                    GameObject curva = hit.collider.gameObject;
+
+                                    Transform Waypoints = curva.transform.GetChild(1);
+                                    Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
+                                    Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
+
+                                    for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
+                                    {
+                                        if (traiettoriaconpadre[j].tag != "Sinistra")
+                                        {
+                                            traiettoria[k] = traiettoriaconpadre[j];
+                                            k++;
+                                        }
                                     }
+
+                                    stacurvando[i] = true;
+                                    traiettorie[i] = traiettoria;
+                                    Curva(i, velocita[i], traiettoria);
+                                }
                                     break;
                                 case 3:
                                     {
