@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Macchine
   - Ruota
+  - Destra
+  - Sinistra
+  - Precedenza
   layers:
   - Default
   - TransparentFX
