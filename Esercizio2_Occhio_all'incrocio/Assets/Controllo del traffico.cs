@@ -18,17 +18,19 @@ public class Controllodeltraffico : MonoBehaviour
     // i tipo2 sono rossi inizialmente
     public List<GameObject> semaforitipo2 = new List<GameObject>();
     //diventerà un input
-    float speed = 8f;
+    float limitedivelocita = 8f;
     float decelerazionesemaforo = 15f;
     float decelerazioneautodavanti = 30f;
     float accelerazione = 15f;
+    float aggiuntacc;
+    float aggiuntavel;
 
     float[] velocita;
     int[] prossimamossa;
-
     bool[] stacurvando;
     Transform[][] traiettorie;
     int[] indici;
+
     // bisogna sistemare la questione degli assi
     void Start()
     {
@@ -40,11 +42,10 @@ public class Controllodeltraffico : MonoBehaviour
         indici = new int[macchine.Length];
         for (int i = 0; i < macchine.Length; i++)
         {
-            velocita[i] = speed;
-            prossimamossa[i] = 2;
+            velocita[i] = limitedivelocita;
+            prossimamossa[i] = Random.Range(1,4);
             stacurvando[i] = false;
          
-            //traiettorie[i] = new Transform[1];
         }
 
         timersemafori = new Stopwatch();
@@ -52,12 +53,6 @@ public class Controllodeltraffico : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    // 0 avanti = forward
-
-    // 180 avanti = -forward
-    //Questo è il giallo
-    bool giallo = false;
     int cont = 1;
     float tempo = 10;
 
@@ -117,13 +112,19 @@ public class Controllodeltraffico : MonoBehaviour
                 Lucisemafori("Verde", semaforo);
             }
         }
-         int layerMaskpassi = 1 << 6;
+
+        int layerMaskpassi = 1 << 6;
         int layerMasknonpassi = 1 << 7;
         int layerMaskveicolo = 1 << 8;
 
 
+
         for (int i = 0; i < macchine.Length; i++)
         {
+            // lo rimetto a false così dopo controlla e se è ancora dentro lo rimette
+            aggiuntacc = 0;
+            aggiuntavel = 0;
+            //OnTriggerStay(macchine[i].GetComponent<Collider>());
             Vector3 avanti = macchine[i].transform.forward;
             Vector3 asseruota = Vector3.zero;
             if (stacurvando[i])
@@ -137,32 +138,26 @@ public class Controllodeltraffico : MonoBehaviour
                 if(macchine[i].transform.rotation[2] <= 90)
                 {
                      direzione = Vector3.forward;
-                     asseruota = macchine[i].transform.right;
+                     asseruota = Vector3.right;
 
                 }
                 else if (macchine[i].transform.rotation[2] <= 180)
                 {
 
                     direzione = Vector3.right;
-                    asseruota = macchine[i].transform.forward;
+                    asseruota = Vector3.forward;
                 }
                 else if(macchine[i].transform.rotation[2] <= 270)
                 {
 
                     direzione = -Vector3.forward;
-                    asseruota = macchine[i].transform.right;
+                    asseruota = Vector3.right;
                 }
                 else
                 {
                     direzione = -Vector3.right;
-                    asseruota = macchine[i].transform.forward;
+                    asseruota = Vector3.forward;
                 }
-
-                //if (macchine[i].transform.rotation.eulerAngles[1] == 90)
-                //{
-                //    avanti = macchine[i].transform.right;
-                //}
-                
 
                 UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
 
@@ -182,16 +177,15 @@ public class Controllodeltraffico : MonoBehaviour
                 {
                     if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
                     {
-                        if (velocita[i] > 0)
-                            Rallenta(i, decelerazionesemaforo + 10f);
+                        //if (aggiuntacc != 0)
+                        //{
+                        //    Accelera(i, aggiuntacc, aggiuntavel);
+                        //}
+                        if (velocita[i] > 0) Rallenta(i, decelerazionesemaforo + 10f);
                     }
                     else
                     {
-                        ///AGGIUNGERE CHE QUANDO SI TROVA DENTRO IL CUBO E SCATTA GIALLO ACCELERI DI MOLTO
-                        if (timersemafori.Elapsed.TotalSeconds + 3 >= tempo * cont)
-                        {
-                            prossimamossa[i] = 3;
-                        }
+                        
                             switch (prossimamossa[i])
                             {
                                 case 1:
@@ -214,11 +208,22 @@ public class Controllodeltraffico : MonoBehaviour
                                             }
                                         }
 
+
+
+                                    if (timersemafori.Elapsed.TotalSeconds + 3 >= tempo * cont)
+                                    {
+                                        Accelera(i);
+                                    }
+                                    else
+                                    {
                                         stacurvando[i] = true;
                                         traiettorie[i] = traiettoria;
                                         Curva(i, velocita[i], traiettoria);
                                     }
-                                    break;
+
+
+                                }
+                                break;
 
                                 case 2:
                                     {
@@ -238,14 +243,23 @@ public class Controllodeltraffico : MonoBehaviour
                                         }
                                     }
 
-                                    stacurvando[i] = true;
-                                    traiettorie[i] = traiettoria;
-                                    Curva(i, velocita[i], traiettoria);
+                                    if (timersemafori.Elapsed.TotalSeconds + 5 >= tempo * cont)
+                                    {
+                                        Accelera(i);
+                                    }
+                                    else
+                                    {
+                                        stacurvando[i] = true;
+                                        traiettorie[i] = traiettoria;
+                                        Curva(i, velocita[i], traiettoria);
+                                    }
+
                                 }
-                                    break;
+                                break;
+
                                 case 3:
                                     {
-                                        Accelera(i, accelerazione);
+                                        Accelera(i);
                                     }
                                     break;
                             
@@ -258,7 +272,7 @@ public class Controllodeltraffico : MonoBehaviour
                 else
                 {
 
-                    Accelera(i, accelerazione);
+                    Accelera(i);
 
                 }
 
@@ -279,16 +293,16 @@ public class Controllodeltraffico : MonoBehaviour
         }
     }
 
-    void Accelera(int i, float accelerazione)
+    void Accelera(int i, float accaggiunta = 0, float maxaggiunta = 0)
     {
-        if (velocita[i] < 8)
+        if (velocita[i] < limitedivelocita + maxaggiunta)
         {
             Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
 
             if (velocita[i] == 0)
             {
 
-                velocita[i] += accelerazione * Time.deltaTime;
+                velocita[i] += (accelerazione + accaggiunta) * Time.deltaTime;
                 rb.AddForce(direzione * velocita[i], ForceMode.VelocityChange);
 
             }
@@ -296,9 +310,9 @@ public class Controllodeltraffico : MonoBehaviour
             {
                 velocita[i] += accelerazione * Time.deltaTime;
 
-                if (velocita[i] > 8)
+                if (velocita[i] > limitedivelocita + maxaggiunta)
                 {
-                    velocita[i] = 8;
+                    velocita[i] = limitedivelocita + maxaggiunta;
                 }
             }
 
@@ -317,10 +331,7 @@ public class Controllodeltraffico : MonoBehaviour
             Quaternion rotazione = Quaternion.LookRotation(Direzione);
             macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, velocita * Time.deltaTime);
 
-            
-            float chill = Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position);
-            UnityEngine.Debug.Log(chill);
-            if (chill < Distanzamin)
+            if (Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position) < Distanzamin)
             {
                 //Accelera(i, accelerazione);
                 indici[i]++;
@@ -343,13 +354,6 @@ public class Controllodeltraffico : MonoBehaviour
     }
 
 
-
-
-
-
-
-
-
     void Gestionesemafori()
     {
         if (timersemafori.Elapsed.TotalSeconds > tempo * cont)
@@ -363,7 +367,7 @@ public class Controllodeltraffico : MonoBehaviour
 
             for (int i = 0; i < macchine.Length; i++)
             {
-                prossimamossa[i] = Random.RandomRange(0, 3);
+                prossimamossa[i] = Random.Range(1, 4);
             }
         }
     }
@@ -409,21 +413,30 @@ public class Controllodeltraffico : MonoBehaviour
         }
     }
 
+    void OnTriggerStay(Collider other)
+    {
+        if (other != null)
+        {
+            aggiuntacc = 5f;
+            aggiuntavel = 7f;
+        }
+
+    }
+
     void MovimentoRuota(Transform macchina, float speed, Vector3 asseruota)
     {
-        Transform[] ruote = new Transform[4];
-        int cont = 0;
+        // Uso una lista perchè ci sono anche camion che hanno 6 ruote
+        List<Transform> ruote = new List<Transform>();
         foreach (Transform ruota in macchina)
         {
             // Controlla se il figlio ha il tag specificato
             if (ruota.CompareTag("Ruota"))
             {
-                ruote[cont] = ruota;
-                cont++;
+                ruote.Add(ruota);
             }         
         }
 
-        for (int i = 0; i < ruote.Length; i++)
+        for (int i = 0; i < ruote.Count; i++)
         {
             ruote[i].Rotate(asseruota, speed * Time.deltaTime);
         }
