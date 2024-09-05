@@ -66,7 +66,7 @@ public class Controllodeltraffico : MonoBehaviour
 
         Gestionesemafori();
 
-        if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
+        if (timersemafori.Elapsed.TotalSeconds + 2.5 > tempo * cont)
         {
             //il semaforo passa da Verde a Giallo
             if (rossooverde)
@@ -116,7 +116,7 @@ public class Controllodeltraffico : MonoBehaviour
         int layerMaskpassi = 1 << 6;
         int layerMasknonpassi = 1 << 7;
         int layerMaskveicolo = 1 << 8;
-
+        int layerMaskgiallo = 1 << 10;
 
 
         for (int i = 0; i < macchine.Length; i++)
@@ -161,7 +161,7 @@ public class Controllodeltraffico : MonoBehaviour
                     asseruota = Vector3.forward;
                 }
 
-                UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
+                //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 6f, UnityEngine.Color.red);
 
                 RaycastHit hit;
                 if (Physics.Raycast(macchine[i].transform.position, avanti, 14f, layerMasknonpassi))
@@ -177,11 +177,11 @@ public class Controllodeltraffico : MonoBehaviour
                 }
                 else if (Physics.Raycast(macchine[i].transform.position, avanti, out hit, 14f, layerMaskpassi))
                 {
-                    if (timersemafori.Elapsed.TotalSeconds + 1.5 > tempo * cont)
+                    if (timersemafori.Elapsed.TotalSeconds + 2.5 > tempo * cont)
                     {
-                        if (aggiuntacc != 0)
+                        if (Physics.Raycast(macchine[i].transform.position, avanti, 6f, layerMaskgiallo))
                         {
-                            Accelera(i, aggiuntacc, aggiuntavel);
+                            Accelera(i, 3,20);
                         }
                         else if (velocita[i] > 0) Rallenta(i, decelerazionesemaforo + 15f);
                     }
@@ -235,15 +235,12 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform Waypoints = curva.transform.GetChild(1);
                                     Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
                                     Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
-                                    Transform precedenza = null; ;
+                                    Transform precedenza = curva.transform.GetChild(2);
 
                                     for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
                                     {
-                                        if (traiettoriaconpadre[j].tag != "Precedenza")
-                                        {
-                                            precedenza = traiettoriaconpadre[j];
 
-                                        }
+
                                         if (traiettoriaconpadre[j].tag != "Sinistra")
                                         {
                                             traiettoria[k] = traiettoriaconpadre[j];
@@ -318,7 +315,7 @@ public class Controllodeltraffico : MonoBehaviour
             }
             else
             {
-                velocita[i] += accelerazione * Time.deltaTime;
+                velocita[i] += accelerazione + accaggiunta * Time.deltaTime;
 
                 if (velocita[i] > limitedivelocita + maxaggiunta)
                 {
@@ -332,24 +329,27 @@ public class Controllodeltraffico : MonoBehaviour
     float Distanzamin = 0.5f;
     void Curva(int i, float velocita, Transform[] traiettoria, Transform precedenza = null)
     {
-        //bool dailaprecedenza = false;
-        //UnityEngine.Debug.DrawRay(precedenza.position, precedenza.forward * 5f, UnityEngine.Color.green, 100f);
+        int layermask = 1 << 8;
+        bool dailaprecedenza = false;
+       
 
-        //if (precedenza != null) 
-        //{
-            
+        if (precedenza != null)
+        {
+            UnityEngine.Debug.DrawRay(precedenza.position, precedenza.right * 5f, UnityEngine.Color.green, 100f);
+            if (Physics.Raycast(precedenza.position, precedenza.forward, 5f, layermask))
+            {
+                dailaprecedenza = true;
+            }
 
-        //    if (Physics.Raycast(precedenza.position,precedenza.forward, 2f, 1 << 8))
-        //    {
-        //        dailaprecedenza= true; 
-        //    }
-                
-        //}
+        }
 
-        //if (!dailaprecedenza)
-        //{
+        if (!dailaprecedenza)
+        {
+
             if (indici[i] < traiettoria.Length)
             {
+
+            Accelera(i);
                 Transform posizionecorrente = traiettoria[indici[i]];
                 Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
                 macchine[i].transform.position += Direzione * velocita * Time.deltaTime;
@@ -368,7 +368,7 @@ public class Controllodeltraffico : MonoBehaviour
                 indici[i] = 0;
 
             }
-        //}
+        }
 
     }
 
