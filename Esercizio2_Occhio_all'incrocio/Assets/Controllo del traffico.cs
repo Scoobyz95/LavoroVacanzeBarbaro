@@ -22,7 +22,7 @@ public class Controllodeltraffico : MonoBehaviour
     float limitedivelocita = 8f;
     float decelerazionesemaforo = 15f;
     float decelerazioneautodavanti = 30f;
-    float accelerazione = 15f;
+    float accelerazione = 2f;
     float aggiuntacc;
     float aggiuntavel;
 
@@ -31,7 +31,7 @@ public class Controllodeltraffico : MonoBehaviour
     Transform[][] traiettorie;
     bool[] fermato;
     int[] indici;
-
+    Transform[][] precedenzedarisp;
     // bisogna sistemare la questione degli assi
     void Start()
     {
@@ -41,6 +41,7 @@ public class Controllodeltraffico : MonoBehaviour
         traiettorie = new Transform[macchine.Length][];
         indici = new int[macchine.Length];
         fermato = new bool[macchine.Length];
+        precedenzedarisp = new Transform[macchine.Length][];
         for (int i = 0; i < macchine.Length; i++)
         {
             velocita[i] = limitedivelocita;
@@ -129,7 +130,7 @@ public class Controllodeltraffico : MonoBehaviour
             Vector3 asseruota = Vector3.zero;
             if (stacurvando[i])
             {
-                Curva(i, velocita[i], traiettorie[i]);
+                Curva(i, velocita[i], traiettorie[i], precedenzedarisp[i]);
 
             }
             else
@@ -222,6 +223,7 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
                                     Transform[] precedenze = new Transform[1];
                                     precedenze[0] = curva.transform.GetChild(2);
+                                    precedenzedarisp[i] = precedenze;
 
                                     for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
                                     {
@@ -293,8 +295,8 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
                                     Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
                                     Transform[] precedenze = new Transform[1];
-                                    precedenze[0] = curva.transform.GetChild(3);
-
+                                    precedenze[0] = curva.transform.GetChild(2);
+                                    precedenzedarisp[i] = precedenze;
                                     for (int j = 0; j < traiettoria.Length; j++)
                                     {
                                         traiettoria[j] = traiettoriaconpadre[j + 1];
@@ -314,8 +316,9 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
                                     Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
                                     Transform[] precedenze = new Transform[2];
-                                    precedenze[0] = curva.transform.GetChild(3);
-                                    precedenze[1] = curva.transform.GetChild(4);
+                                    precedenze[0] = curva.transform.GetChild(2);
+                                    precedenze[1] = curva.transform.GetChild(3);
+                                    precedenzedarisp[i] = precedenze;
 
                                     for (int j = 0; j < traiettoria.Length; j++)
                                     {
@@ -390,23 +393,30 @@ public class Controllodeltraffico : MonoBehaviour
     }
     
     float Distanzamin = 0.5f;
-    void Curva(int i, float velocita, Transform[] traiettoria, Transform[] precedenze = null)
+    void Curva(int i, float velocità, Transform[] traiettoria, Transform[] precedenze = null)
     {
         int layermask = 1 << 8;
         bool dailaprecedenza = false;
-        Vector3 prec = Vector3.right;
         if(precedenze != null) 
         for (int j = 0; j < precedenze.Length; j++)
         {
             if (precedenze[j] != null)
             {
-                UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * 10f, UnityEngine.Color.green, 100f);
-                if (Physics.Raycast(precedenze[j].position, prec, 10f, layermask))
+                UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * 15f, UnityEngine.Color.green, 5f);
+                    RaycastHit hit;
+                if (Physics.Raycast(precedenze[j].position, precedenze[j].right,out hit, 15f, layermask))
                 {
-                    dailaprecedenza = true;
+                        if (hit.collider.gameObject != macchine[i])
+                        {
+                            dailaprecedenza = true;
+                        }
+                        else
+                        {
+                            int x = 0;
+                        }
                 }
-                prec = -Vector3.right;
             }
+
         }
 
 
@@ -417,9 +427,9 @@ public class Controllodeltraffico : MonoBehaviour
                 Accelera(i);
                 Transform posizionecorrente = traiettoria[indici[i]];
                 Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
-                macchine[i].transform.position += Direzione * velocita * Time.deltaTime;
+                macchine[i].transform.position += Direzione * velocità * Time.deltaTime;
                 Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, velocita * Time.deltaTime);
+                macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, velocità * Time.deltaTime);
 
                 if (Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position) < Distanzamin)
                 {
@@ -437,6 +447,12 @@ public class Controllodeltraffico : MonoBehaviour
                 indici[i] = 0;
 
             }
+        }
+        else
+        {
+            velocita[i] = 0;
+            Rigidbody rb = macchine[i].GetComponent<Rigidbody>();
+            rb.velocity = Vector3.zero;
         }
 
 
