@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +21,7 @@ public class Controllodeltraffico : MonoBehaviour
     public List<GameObject> semaforitipo2 = new List<GameObject>();
     //diventerà un input
     float limitedivelocita = 8f;
-    float decelerazionesemaforo = 15f;
+    float decelerazionesemaforo = 20f;
     float decelerazioneautodavanti = 30f;
     float accelerazione = 2f;
     float aggiuntacc;
@@ -32,9 +33,15 @@ public class Controllodeltraffico : MonoBehaviour
     bool[] fermato;
     int[] indici;
     Transform[][] precedenzedarisp;
+    int[] scelta;
+    bool[] incrocio;
+    System.Random random;
     // bisogna sistemare la questione degli assi
     void Start()
     {
+        timersemafori = new Stopwatch();
+        timersemafori.Start();
+        random = new System.Random();
         macchine = GameObject.FindGameObjectsWithTag("Macchine");
         velocita = new float[macchine.Length];
         stacurvando = new bool[macchine.Length];
@@ -42,16 +49,21 @@ public class Controllodeltraffico : MonoBehaviour
         indici = new int[macchine.Length];
         fermato = new bool[macchine.Length];
         precedenzedarisp = new Transform[macchine.Length][];
+        incrocio = new bool[macchine.Length];
+        scelta = new int[macchine.Length];
+
+
         for (int i = 0; i < macchine.Length; i++)
         {
+
+            macchine[i].name = i.ToString();
             velocita[i] = limitedivelocita;
             stacurvando[i] = false;
-            fermato[i]= false;     
+            fermato[i]= false;
+            scelta[i] = random.Next(1, 4);
+            incrocio[i] = false;
         }
-
-        timersemafori = new Stopwatch();
-        timersemafori.Start();
-
+       
     }
 
     int cont = 1;
@@ -155,7 +167,8 @@ public class Controllodeltraffico : MonoBehaviour
                     direzione = -Vector3.right;
                     asseruota = Vector3.forward;
                 }
-                UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
+
+                //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
                 RaycastHit hit;
                 if (Physics.Raycast(macchine[i].transform.position, avanti, 10f, layerMasknonpassi))
                 {
@@ -166,7 +179,6 @@ public class Controllodeltraffico : MonoBehaviour
                 {
                     if (velocita[i] > 0)
                         Rallenta(i, decelerazioneautodavanti);
-
                 }
                 else if (Physics.Raycast(macchine[i].transform.position, avanti, out hit, 6f, layerMaskpassi))
                 {
@@ -181,7 +193,7 @@ public class Controllodeltraffico : MonoBehaviour
                     }
                     else
                     {
-                        switch (Random.Range(1, 4))
+                        switch (scelta[i])
                         {
                             case 1:
                                 {
@@ -190,6 +202,7 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform Waypoints = curva.transform.GetChild(0);
                                     Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
                                     Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
+                                    
 
                                     for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
                                     {
@@ -207,6 +220,7 @@ public class Controllodeltraffico : MonoBehaviour
                                     else
                                     {
                                         stacurvando[i] = true;
+                                        incrocio[i] = true;
                                         traiettorie[i] = traiettoria;
                                         Curva(i, velocita[i], traiettoria);
                                     }
@@ -224,6 +238,7 @@ public class Controllodeltraffico : MonoBehaviour
                                     Transform[] precedenze = new Transform[1];
                                     precedenze[0] = curva.transform.GetChild(2);
                                     precedenzedarisp[i] = precedenze;
+                                    
 
                                     for (int j = 0, k = 0; j < traiettoriaconpadre.Length; j++)
                                     {
@@ -241,6 +256,7 @@ public class Controllodeltraffico : MonoBehaviour
                                     else
                                     {
                                         stacurvando[i] = true;
+                                        incrocio[i] = true;
                                         traiettorie[i] = traiettoria;
                                         Curva(i, velocita[i], traiettoria, precedenze);
                                     }
@@ -285,7 +301,7 @@ public class Controllodeltraffico : MonoBehaviour
                     }
                     else
                     {
-                        switch (Random.Range(1, 3))
+                        switch (random.Next(1,3))
                         {
                             case 1:
                                 {
@@ -350,11 +366,6 @@ public class Controllodeltraffico : MonoBehaviour
             }
         
     }
-
-
-
-    
-
     void Rallenta(int i, float decelerazione)
     {
         velocita[i] -= decelerazione * Time.deltaTime;
@@ -397,27 +408,52 @@ public class Controllodeltraffico : MonoBehaviour
     {
         int layermask = 1 << 8;
         bool dailaprecedenza = false;
-        if(precedenze != null) 
-        for (int j = 0; j < precedenze.Length; j++)
+        float distanza = 0;
+
+        if (incrocio[i])
         {
-            if (precedenze[j] != null)
+            distanza = 10f;
+        }
+        else
+        {
+            distanza = 20f;
+        }
+
+        if(precedenze != null)
+            for (int j = 0; j < precedenze.Length; j++)
             {
-                UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * 15f, UnityEngine.Color.green, 5f);
-                    RaycastHit hit;
-                if (Physics.Raycast(precedenze[j].position, precedenze[j].right,out hit, 15f, layermask))
+                if (precedenze[j] != null)
                 {
-                        if (hit.collider.gameObject != macchine[i])
+                    UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, UnityEngine.Color.green, 1f);
+                    RaycastHit hit;
+                    Collider myCollider = macchine[i].GetComponent<Collider>();
+
+                    if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))
+                    {
+                        if (hit.collider != myCollider)
                         {
-                            dailaprecedenza = true;
+                            int k = Int32.Parse(hit.collider.gameObject.name);
+
+                            if (incrocio[k])
+                            {
+
+                                if (scelta[k] == 3)
+                                    dailaprecedenza = true;
+
+                                if (scelta[k] == 2)
+                                {
+                                    // sceglere chi darà la precedenza, la da chi ha più macchine dietro
+                                }
+                            }
+                            else
+                            {
+                                dailaprecedenza = true;
+                            }
                         }
-                        else
-                        {
-                            int x = 0;
-                        }
+                    }
                 }
             }
 
-        }
 
 
         if (!dailaprecedenza)
@@ -439,13 +475,18 @@ public class Controllodeltraffico : MonoBehaviour
             }
             else
             {
+                if (incrocio[i])
+                {
+                    incrocio[i] = false;
+                }
+
                 if (!fermato[i])
                 {
                     fermato[i] = false;
                 }
+
                 stacurvando[i] = false;
                 indici[i] = 0;
-
             }
         }
         else
@@ -473,6 +514,12 @@ public class Controllodeltraffico : MonoBehaviour
             }
             rossooverde = !rossooverde;
         }
+
+        for (int i = 0; i < macchine.Length; i++)
+        {
+            scelta[i] = random.Next(1,4);
+        }
+
     }
 
     void Lucisemafori(string colore, GameObject semaforo)
