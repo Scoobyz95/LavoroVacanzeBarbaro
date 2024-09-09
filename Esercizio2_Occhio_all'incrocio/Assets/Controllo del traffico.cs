@@ -172,6 +172,7 @@ public class Controllodeltraffico : MonoBehaviour
                 RaycastHit hit;
                 if (Physics.Raycast(macchine[i].transform.position, avanti, 10f, layerMasknonpassi))
                 {
+                    
                     if (velocita[i] > 0)
                         Rallenta(i, decelerazionesemaforo);
                 }
@@ -182,11 +183,11 @@ public class Controllodeltraffico : MonoBehaviour
                 }
                 else if (Physics.Raycast(macchine[i].transform.position, avanti, out hit, 5f, layerMaskpassi))
                 {
-                    if (timersemafori.Elapsed.TotalSeconds + 2.5 > tempo * cont)
+                    if (timersemafori.Elapsed.TotalSeconds + 3 > tempo * cont)
                     {
-                        if (Physics.Raycast(macchine[i].transform.position, avanti, 6f, layerMaskgiallo))
+                        if (Physics.Raycast(macchine[i].transform.position, avanti, 2f, layerMaskgiallo))
                         {
-                            Accelera(i, 2, 14);
+                            Accelera(i, 10, 30);
                         }
                         else if (velocita[i] > 0)
                         { Rallenta(i, decelerazionesemaforo + 15f); }
@@ -407,7 +408,7 @@ public class Controllodeltraffico : MonoBehaviour
 
         if (incrocio[i])
         {
-            distanza = 20f;
+            distanza = 30f;
         }
         else
         {
@@ -454,7 +455,7 @@ public class Controllodeltraffico : MonoBehaviour
                 Accelera(i);
                 Transform posizionecorrente = traiettoria[indici[i]];
                 Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
-                macchine[i].transform.position += Direzione * velocita[i]  * Time.deltaTime;
+                macchine[i].transform.position += Direzione * (velocita[i] - 1)  * Time.deltaTime;
                 Quaternion rotazione = Quaternion.LookRotation(Direzione);
                 macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, velocita[i] * Time.deltaTime);
 
@@ -482,7 +483,7 @@ public class Controllodeltraffico : MonoBehaviour
         }
         else
         {
-            velocita[i] = -3;
+            velocita[i] = 0;
 
         }
 
