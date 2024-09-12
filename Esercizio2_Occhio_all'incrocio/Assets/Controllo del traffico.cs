@@ -372,7 +372,6 @@ public class Controllodeltraffico : MonoBehaviour
                     switch (decisionestop[i])
                     {
                         case 1 :
-                        case 2 :
                             {
                                 //curva a destra case 1 
                                 //curva a sinistra case 2
@@ -475,7 +474,7 @@ public class Controllodeltraffico : MonoBehaviour
         }
         else
         {
-            distanza = 12f;
+            distanza = 22f;
         }
 
         if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 12f, layerBastaprecedenza))
@@ -521,11 +520,6 @@ public class Controllodeltraffico : MonoBehaviour
                                 }
 
                             }
-                            else
-                            {
-                                if (decisionestop[k] != 1)
-                                dailaprecedenza = true;
-                            }
                         }
 
                     }
@@ -559,6 +553,7 @@ public class Controllodeltraffico : MonoBehaviour
             else
             {
                 fermato[i] = false;
+                precedenzedarisp[i] = null;
                 stacurvando[i] = false;
                 superatoprimaprecedenza[i] = false;
                 incrocio[i] = false;
