@@ -474,10 +474,10 @@ public class Controllodeltraffico : MonoBehaviour
         }
         else
         {
-            distanza = 22f;
+            distanza = 18f;
         }
 
-        if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 12f, layerBastaprecedenza))
+        if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 20f, layerBastaprecedenza))
         {
             precedenze = null;
         }
@@ -520,6 +520,10 @@ public class Controllodeltraffico : MonoBehaviour
                                 }
 
                             }
+                            else
+                            {
+                                dailaprecedenza = true;
+                            }
                         }
 
                     }
@@ -549,6 +553,8 @@ public class Controllodeltraffico : MonoBehaviour
                     //Accelera(i, accelerazione);
                     indici[i]++;
                 }
+
+                
             }
             else
             {
