@@ -474,7 +474,7 @@ public class Controllodeltraffico : MonoBehaviour
         }
         else
         {
-            distanza = 18f;
+            distanza = 30f;
         }
 
         if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 20f, layerBastaprecedenza))
