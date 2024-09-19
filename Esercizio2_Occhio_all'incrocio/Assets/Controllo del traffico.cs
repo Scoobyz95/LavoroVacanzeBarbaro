@@ -153,35 +153,31 @@ public class Controllodeltraffico : MonoBehaviour
             }
             else
             {
-                float differenza = 0;
-                if (macchine[i].transform.rotation[2] <= 90)
+                Quaternion vector3;
+                direzione = Vector3.forward;
+                asseruota = Vector3.right;
+                if (macchine[i].transform.eulerAngles.y <= 91 && macchine[i].transform.eulerAngles.y >= 88)
                 {
-                    direzione = Vector3.forward;
-                    asseruota = Vector3.right;
-                    //differenza = 0 - macchine[i].transform.rotation[2];
+                    vector3 = Quaternion.Euler(0, 90, 0);
+
                 }
-                else if (macchine[i].transform.rotation[2] <= 180)
+                else if (macchine[i].transform.eulerAngles.y <= 181 && macchine[i].transform.eulerAngles.y >= 177)
                 {
-                    direzione = Vector3.right;
-                    asseruota = Vector3.forward;
-                    //differenza = 90 - macchine[i].transform.rotation[2];
+                    vector3 = Quaternion.Euler(0, 180, 0);
                 }
-                else if (macchine[i].transform.rotation[2] <= 270)
+                else if (macchine[i].transform.eulerAngles.y <= 271 && macchine[i].transform.eulerAngles.y >= 268)
                 {
-                    direzione = -Vector3.forward;
-                    asseruota = Vector3.right;
-                    //differenza = 180 - macchine[i].transform.rotation[2];
+                    vector3 = Quaternion.Euler(0, 270, 0);
                 }
                 else
                 {
-                    direzione = -Vector3.right;
-                    asseruota = Vector3.forward;
-                    //differenza = 270 - macchine[i].transform.rotation[2];
+
+                    vector3 = Quaternion.Euler(0, 0, 0);
                 }
 
 
                 //macchine[i].transform.Rotate(Vector3.up, differenza);
-
+                macchine[i].transform.rotation = vector3;
 
                 //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
                 if (Physics.Raycast(macchine[i].transform.position, avanti, 4f, layerMaskgiallo))
@@ -461,7 +457,7 @@ public class Controllodeltraffico : MonoBehaviour
     }
     
     float Distanzamin = 0.5f;
-    void Curva(int i ,Transform[] traiettoria, Transform[] precedenze = null)
+    void Curva(int i, Transform[] traiettoria, Transform[] precedenze = null)
     {
         int layermask = 1 << 8;
         int layerBastaprecedenza = 1 << 14;
@@ -470,7 +466,7 @@ public class Controllodeltraffico : MonoBehaviour
 
         if (incrocio[i])
         {
-            distanza = 40f;
+            distanza = 30f;
         }
         else
         {
@@ -482,94 +478,98 @@ public class Controllodeltraffico : MonoBehaviour
             precedenze = null;
         }
 
-        if (precedenze != null)
-        {
-            if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 4f, 1 << 12))
+
+            if (precedenze != null)
             {
-                superatoprimaprecedenza[i] = true;
-            }
-            for (int j = 0; j < precedenze.Length; j++)
-            {
-                
-                if (superatoprimaprecedenza[i])
+                if (Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 4f, 1 << 12))
                 {
-                    j = 1;
+                    superatoprimaprecedenza[i] = true;
                 }
-
-                if (j < precedenze.Length)
+                for (int j = 0; j < precedenze.Length; j++)
                 {
-                    UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, UnityEngine.Color.green);
 
-
-                    RaycastHit hit;
-                    Collider myCollider = macchine[i].GetComponent<Collider>();
-                    UnityEngine.Debug.DrawRay(macchine[i].transform.position, macchine[i].transform.forward * 7f, UnityEngine.Color.red);
-
-
-                    if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))
+                    if (superatoprimaprecedenza[i])
                     {
-                        if (hit.collider != myCollider)
-                        {
-                            int k = Int32.Parse(hit.collider.gameObject.name);
+                        j = 1;
+                    }
 
-                            if (incrocio[i])
+                    if (j < precedenze.Length)
+                    {
+                        UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, UnityEngine.Color.green);
+
+
+                        RaycastHit hit;
+                        Collider myCollider = macchine[i].GetComponent<Collider>();
+                        UnityEngine.Debug.DrawRay(macchine[i].transform.position, macchine[i].transform.forward * 7f, UnityEngine.Color.red);
+
+
+                        if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))
+                        {
+                            if (hit.collider != myCollider)
                             {
-                                if (scelta[k] != 2)
+                                int k = Int32.Parse(hit.collider.gameObject.name);
+
+                                if (incrocio[i])
+                                {
+                                    if (scelta[k] != 2)
+                                    {
+                                        dailaprecedenza = true;
+                                    }
+
+                                }
+                                else
                                 {
                                     dailaprecedenza = true;
                                 }
+                            }
 
-                            }
-                            else
-                            {
-                                dailaprecedenza = true;
-                            }
                         }
-
                     }
                 }
             }
 
-           
 
 
-
-
-        }
-
-        if (!dailaprecedenza)
+        if (!Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 5f, 1 << 8))
         {
-            if (indici[i] < traiettoria.Length)
+            if (!dailaprecedenza)
             {
-                Accelera(i);
-                Transform posizionecorrente = traiettoria[indici[i]];
-                Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
-                macchine[i].transform.position += Direzione * (velocita[i] + 1)  * Time.deltaTime;
-                Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, velocita[i] * Time.deltaTime);
-
-                if (Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position) < Distanzamin)
+                if (indici[i] < traiettoria.Length)
                 {
-                    //Accelera(i, accelerazione);
-                    indici[i]++;
-                }
+                    Accelera(i);
+                    Transform posizionecorrente = traiettoria[indici[i]];
+                    Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
+                    macchine[i].transform.position += Direzione * (velocita[i] + 2) * Time.deltaTime;
+                    Quaternion rotazione = Quaternion.LookRotation(Direzione);
+                    macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, (velocita[i] + 2)* Time.deltaTime);
 
-                
+                    if (Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position) < Distanzamin)
+                    {
+                        //Accelera(i, accelerazione);
+                        indici[i]++;
+                    }
+
+
+                }
+                else
+                {
+                    fermato[i] = false;
+                    precedenzedarisp[i] = null;
+                    stacurvando[i] = false;
+                    superatoprimaprecedenza[i] = false;
+                    incrocio[i] = false;
+                    indici[i] = 0;
+                }
             }
             else
             {
-                fermato[i] = false;
-                precedenzedarisp[i] = null;
-                stacurvando[i] = false;
-                superatoprimaprecedenza[i] = false;
-                incrocio[i] = false;
-                indici[i] = 0;
+                velocita[i] = 0;
+
             }
         }
         else
         {
             velocita[i] = 0;
-
         }
 
 
