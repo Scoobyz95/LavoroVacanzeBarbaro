@@ -12,50 +12,70 @@ namespace Assets
     public class Macchina
     {
         GameObject macchina;
-        System.Random random = new System.Random();
-        Vector3 direzione;
-        Vector3 asseruota;
+
         float velocita;
         float accelerazione;
-        int limitedivelocita;
-        bool stacurvando;
-        Transform[] traiettorie;
-        int scelta;
-        bool incrocio;
-        bool superatoprimaprecedenza;     
-        int[] indici;
-        Transform[] precedenzedarisp;
+        float limitedivelocita;
         float decelerazionesemaforo;
         float decelerazioneautodavanti;
-        Stopwatch timersemafori;
-        bool fermato;
 
+        int indici;
+        int scelta;
+
+        bool incrocio;
+        bool superatoprimaprecedenza;
+        bool fermato;
+        bool stacurvando;
+
+        Vector3 direzione;
+        Vector3 asseruota;
+        
+        
+        Transform[] traiettorie;      
+        Transform[] precedenzedarisp;
+        Macchina[] traffico;
+        
+        Stopwatch timersemafori;
         
 
-        Macchina(GameObject macchina, Stopwatch timersemafori, float decelerazionesemaforo, float decelerazioneautodavanti, float accelerazione, int limitedivelocita)
+        System.Random random = new System.Random();
+
+        public Macchina(GameObject macchina, Stopwatch timersemafori, float decelerazionesemaforo, float decelerazioneautodavanti, float accelerazione, float limitedivelocita, Macchina[] traffico)
         {
-            direzione = Vector3.forward;
-            asseruota = Vector3.right;
+            this.macchina = macchina;
             velocita = 8;
-            stacurvando = false;
-            traiettorie = null;
-            scelta = random.Next(1, 4);
-            incrocio = false;
-            superatoprimaprecedenza = false;
-            indici = null;
-            precedenzedarisp = null;
-            this.decelerazionesemaforo = decelerazionesemaforo;
-            this.decelerazioneautodavanti = decelerazioneautodavanti;
             this.accelerazione = accelerazione;
             this.limitedivelocita = limitedivelocita;
-            this.macchina = macchina;
-            this.timersemafori = timersemafori;
+            this.decelerazionesemaforo = decelerazionesemaforo;
+            this.decelerazioneautodavanti = decelerazioneautodavanti;
+
+            indici = 0;
+            scelta = random.Next(1, 4);
+
+            incrocio = false;
+            superatoprimaprecedenza = false;
             fermato = false;
+            stacurvando = false;
+
+            direzione = Vector3.forward;
+            asseruota = Vector3.right;
+
+            traiettorie = null;
+            precedenzedarisp = null;
+            this.traffico = traffico;
+            
+            this.timersemafori = timersemafori;
+                  
         }
 
         public int GetScelta()
         {
             return scelta;
+        }
+
+        public void SetScelta()
+        {
+            scelta = random.Next(1, 4);
         }
         public void Azione(int tempo, int cont)
         {
@@ -65,10 +85,7 @@ namespace Assets
             int layermaskcurvare = 1 << 9;
             int layerMaskgiallo = 1 << 10;
             int layerMaskStop = 1 << 11;
-            int layerMaskStopdestraesinistra = 1 << 13;
             // lo rimetto a false così dopo controlla e se è ancora dentro lo rimette
-            aggiuntacc = 0;
-            aggiuntavel = 0;
 
             // se attraversa il cubo ed è giallo accelerera
             Vector3 avanti = macchina.transform.forward;
@@ -342,7 +359,7 @@ namespace Assets
             bool dailaprecedenza = false;
             float distanza = 0;
 
-            if (incrocio[i])
+            if (incrocio)
             {
                 distanza = 30f;
             }
@@ -361,12 +378,12 @@ namespace Assets
             {
                 if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 4f, 1 << 12))
                 {
-                    superatoprimaprecedenza[i] = true;
+                    superatoprimaprecedenza = true;
                 }
                 for (int j = 0; j < precedenze.Length; j++)
                 {
 
-                    if (superatoprimaprecedenza[i])
+                    if (superatoprimaprecedenza)
                     {
                         j = 1;
                     }
@@ -389,7 +406,7 @@ namespace Assets
 
                                 if (incrocio)
                                 {
-                                    if (hit.collider.!= 2)
+                                    if (traffico[k].GetScelta() != 2)
                                     {
                                         dailaprecedenza = true;
                                     }
@@ -408,46 +425,46 @@ namespace Assets
 
 
 
-            if (!Physics.Raycast(macchine[i].transform.position, macchine[i].transform.forward, 5f, 1 << 8))
+            if (!Physics.Raycast(macchina.transform.position, macchina.transform.forward, 5f, 1 << 8))
             {
                 if (!dailaprecedenza)
                 {
-                    if (indici[i] < traiettoria.Length)
+                    if (indici < traiettoria.Length)
                     {
-                        Accelera(i);
-                        Transform posizionecorrente = traiettoria[indici[i]];
-                        Vector3 Direzione = (posizionecorrente.position - macchine[i].transform.position).normalized;
-                        macchine[i].transform.position += Direzione * (velocita[i] + 2) * Time.deltaTime;
+                        Accelera();
+                        Transform posizionecorrente = traiettoria[indici];
+                        Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
+                        macchina.transform.position += Direzione * (velocita + 2) * Time.deltaTime;
                         Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                        macchine[i].transform.rotation = Quaternion.Slerp(macchine[i].transform.rotation, rotazione, (velocita[i] + 2) * Time.deltaTime);
+                        macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, (velocita + 2) * Time.deltaTime);
 
-                        if (Vector3.Distance(macchine[i].transform.position, traiettoria[indici[i]].position) < Distanzamin)
+                        if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
                         {
                             //Accelera(i, accelerazione);
-                            indici[i]++;
+                            indici++;
                         }
 
 
                     }
                     else
                     {
-                        fermato[i] = false;
-                        precedenzedarisp[i] = null;
-                        stacurvando[i] = false;
-                        superatoprimaprecedenza[i] = false;
-                        incrocio[i] = false;
-                        indici[i] = 0;
+                        fermato = false;
+                        precedenzedarisp = null;
+                        stacurvando = false;
+                        superatoprimaprecedenza = false;
+                        incrocio = false;
+                        indici = 0;
                     }
                 }
                 else
                 {
-                    velocita[i] = 0;
+                    velocita = 0;
 
                 }
             }
             else
             {
-                velocita[i] = 0;
+                velocita = 0;
             }
 
 

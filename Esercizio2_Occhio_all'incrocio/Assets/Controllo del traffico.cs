@@ -12,7 +12,7 @@ public class Controllodeltraffico : MonoBehaviour
 {
     // Start is called before the first frame update
     GameObject[] macchine;
-    public Macchina[] traffico;
+    Macchina[] traffico;
     Stopwatch timersemafori;
     public List<GameObject> semafori = new List<GameObject>();
 
@@ -26,19 +26,6 @@ public class Controllodeltraffico : MonoBehaviour
     float decelerazionesemaforo = 20f;
     float decelerazioneautodavanti = 30f;
     float accelerazione = 2f;
-    float aggiuntacc;
-    float aggiuntavel;
-
-    float[] velocita;
-    bool[] stacurvando;
-    Transform[][] traiettorie;
-    bool[] fermato;
-    int[] indici;
-    Transform[][] precedenzedarisp;
-    int[] scelta;
-    bool[] incrocio;
-    bool[] superatoprimaprecedenza;
-    int[] decisionestop;
     System.Random random;
 
 
@@ -46,39 +33,15 @@ public class Controllodeltraffico : MonoBehaviour
     // bisogna sistemare la questione degli assi
     void Start()
     {
-        timersemafori = new Stopwatch();
-        timersemafori.Start();
-        random = new System.Random();
-        macchine = GameObject.FindGameObjectsWithTag("Macchine");
-        velocita = new float[macchine.Length];
-        stacurvando = new bool[macchine.Length];
-        traiettorie = new Transform[macchine.Length][];
-        indici = new int[macchine.Length];
-        precedenzedarisp = new Transform[macchine.Length][];
-        incrocio = new bool[macchine.Length];
-        scelta = new int[macchine.Length];
-        superatoprimaprecedenza = new bool[macchine.Length];
-        fermato = new bool[macchine.Length];
-        decisionestop = new int[macchine.Length];
-
         for (int i = 0; i < macchine.Length; i++)
         {
-            macchine[i].AddComponent<Macchina()>();
-
-            macchine[i].name = i.ToString();
-            velocita[i] = limitedivelocita;
-            stacurvando[i] = false;
-            scelta[i] = random.Next(1,4);
-            decisionestop[i] = random.Next(1, 4);
-            incrocio[i] = false;
-            superatoprimaprecedenza[i] = false;
-            fermato[i] = false; 
+            traffico[i] = new Macchina(macchine[i], timersemafori, decelerazionesemaforo, decelerazioneautodavanti, accelerazione, limitedivelocita, traffico);
         }
        
     }
 
     int cont = 1;
-    float tempo = 20;
+    int tempo = 20;
 
     Material sferadailluminare;
 
@@ -96,7 +59,6 @@ public class Controllodeltraffico : MonoBehaviour
                 {
                     AccendioSpegni("Verde", semaforo, 0f);
                     AccendioSpegni("Giallo", semaforo, 2f);
-
                 }
             }
             else
@@ -105,7 +67,6 @@ public class Controllodeltraffico : MonoBehaviour
                 {
                     AccendioSpegni("Verde", semaforo, 0f);
                     AccendioSpegni("Giallo", semaforo, 2f);
-
                 }
             }
         }
@@ -134,20 +95,11 @@ public class Controllodeltraffico : MonoBehaviour
             }
         }
 
-        
-
         for (int i = 0; i < macchine.Length; i++)
         {
-
-        }
-        
+            traffico[i].Azione(tempo, cont);
+        }     
     }
-    
-
-
-    
-    
-
     void Gestionesemafori()
     {
         if (timersemafori.Elapsed.TotalSeconds > tempo * cont)
@@ -165,15 +117,10 @@ public class Controllodeltraffico : MonoBehaviour
 
             for (int i = 0; i < macchine.Length; i++)
             {
-                scelta[i] = random.Next(1, 4);
-                decisionestop[i] = random.Next(1, 4);
+                traffico[i].SetScelta();
             }
         }
-
-        
-
     }
-
     void Lucisemafori(string colore, GameObject semaforo)
     {
         if(colore == "Rosso") 
@@ -186,9 +133,7 @@ public class Controllodeltraffico : MonoBehaviour
         }
 
         AccendioSpegni(colore, semaforo, 2f);
-    }
-
-    
+    }    
     void AccendioSpegni(string colore, GameObject semaforo, float intensita)
     {
         Transform childTransform = semaforo.transform.Find(colore);
@@ -214,7 +159,5 @@ public class Controllodeltraffico : MonoBehaviour
             sferadailluminare.SetColor("_EmissionColor", emissionColor * intensita);
         }
     }
-
-    
 
 }
