@@ -89,7 +89,6 @@ namespace Assets
 
             // se attraversa il cubo ed è giallo accelerera
             Vector3 avanti = macchina.transform.forward;
-            Vector3 asseruota = Vector3.zero;
             if (stacurvando)
             {
                 Curva( traiettorie, precedenzedarisp);
@@ -98,11 +97,12 @@ namespace Assets
             else
             {
                 Quaternion vector3;
-                direzione = 
-                asseruota = Vector3.right;
+                direzione = Vector3.forward;
+
                 if (macchina.transform.eulerAngles.y <= 91 && macchina.transform.eulerAngles.y >= 88)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
+                    
 
                 }
                 else if (macchina.transform.eulerAngles.y <= 181 && macchina.transform.eulerAngles.y >= 177)
@@ -115,7 +115,6 @@ namespace Assets
                 }
                 else
                 {
-
                     vector3 = Quaternion.Euler(0, 0, 0);
                 }
 
@@ -368,7 +367,7 @@ namespace Assets
                 distanza = 30f;
             }
 
-            if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 20f, layerBastaprecedenza))
+            if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 4f, layerBastaprecedenza))
             {
                 precedenze = null;
             }
@@ -390,12 +389,12 @@ namespace Assets
 
                     if (j < precedenze.Length)
                     {
-                        UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, UnityEngine.Color.green);
+                        UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, Color.green);
 
 
                         RaycastHit hit;
                         Collider myCollider = macchina.GetComponent<Collider>();
-                        UnityEngine.Debug.DrawRay(macchina.transform.position, macchina.transform.forward * 7f, UnityEngine.Color.red);
+                        UnityEngine.Debug.DrawRay(macchina.transform.position, macchina.transform.forward * 7f, Color.red);
 
 
                         if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))

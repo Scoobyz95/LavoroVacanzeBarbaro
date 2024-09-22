@@ -33,8 +33,13 @@ public class Controllodeltraffico : MonoBehaviour
     // bisogna sistemare la questione degli assi
     void Start()
     {
+        macchine = GameObject.FindGameObjectsWithTag("Macchine");
+        traffico = new Macchina[macchine.Length];       
+        timersemafori = new Stopwatch();
+        timersemafori.Start();
         for (int i = 0; i < macchine.Length; i++)
         {
+            macchine[i].name = i.ToString();
             traffico[i] = new Macchina(macchine[i], timersemafori, decelerazionesemaforo, decelerazioneautodavanti, accelerazione, limitedivelocita, traffico);
         }
        
