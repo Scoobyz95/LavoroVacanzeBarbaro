@@ -21,6 +21,7 @@ namespace Assets
 
         int indici;
         int scelta;
+        int decisionestop;
 
         bool incrocio;
         bool superatoprimaprecedenza;
@@ -51,6 +52,7 @@ namespace Assets
 
             indici = 0;
             scelta = random.Next(1, 4);
+            decisionestop = random.Next(1, 3);
 
             incrocio = false;
             superatoprimaprecedenza = false;
@@ -76,6 +78,7 @@ namespace Assets
         public void SetScelta()
         {
             scelta = random.Next(1, 4);
+            decisionestop = random.Next(1, 3);
         }
         public void Azione(int tempo, int cont)
         {
@@ -99,17 +102,17 @@ namespace Assets
                 Quaternion vector3;
                 direzione = Vector3.forward;
 
-                if (macchina.transform.eulerAngles.y <= 91 && macchina.transform.eulerAngles.y >= 88)
+                if (macchina.transform.eulerAngles.y <= 94 && macchina.transform.eulerAngles.y >= 87)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
                     
 
                 }
-                else if (macchina.transform.eulerAngles.y <= 181 && macchina.transform.eulerAngles.y >= 177)
+                else if (macchina.transform.eulerAngles.y <= 184 && macchina.transform.eulerAngles.y >= 177)
                 {
                     vector3 = Quaternion.Euler(0, 180, 0);
                 }
-                else if (macchina.transform.eulerAngles.y <= 271 && macchina.transform.eulerAngles.y >= 268)
+                else if (macchina.transform.eulerAngles.y <= 274 && macchina.transform.eulerAngles.y >= 266)
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
@@ -293,7 +296,29 @@ namespace Assets
                                 break;
                         }
                     }
-                }               
+                }
+                else if (Physics.Raycast(macchina.transform.position, avanti, out hit, 5f, 1 << 13))
+                {
+                    if ( decisionestop == 2)
+                    {
+                        GameObject curva = hit.collider.gameObject;
+                        Transform Waypoints = curva.transform.GetChild(0);
+                        Transform[] traiettoriaconpadre = Waypoints.GetComponentsInChildren<Transform>();
+                        Transform[] traiettoria = new Transform[traiettoriaconpadre.Length - 1];
+                        Transform[] precedenze = new Transform[1];
+                        precedenze[0] = curva.transform.GetChild(1);
+                        precedenzedarisp = precedenze;
+                        for (int j = 0; j < traiettoria.Length; j++)
+                        {
+                            traiettoria[j] = traiettoriaconpadre[j + 1];
+                        }
+
+                        stacurvando = true;
+                        traiettorie = traiettoria;
+                        Curva(traiettoria, precedenze);
+                    }
+
+                }
                 else
                 {
                     Accelera();
