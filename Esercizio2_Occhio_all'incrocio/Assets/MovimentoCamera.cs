@@ -24,39 +24,45 @@ public class MovimentoCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Spostamento WASD
         Vector3 direz = new Vector3(0, 0, 0);
 
-        if (Input.GetKey(KeyCode.W)) direz.z = +1f;
-        if (Input.GetKey(KeyCode.S)) direz.z = -1f;
-        if (Input.GetKey(KeyCode.A)) direz.x = -1f;
-        if (Input.GetKey(KeyCode.D)) direz.x = +1f;
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) direz.z = +2f;
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) direz.z = -2f;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) direz.x = -2f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) direz.x = +2f;
 
         direz.Normalize();
         Vector3 movimento = transform.forward * direz.z + transform.right * direz.x;
 
 
-        float scrollValue = Input.GetAxis("Mouse ScrollWheel");
         //Spostamento rotella del mouse
+        float scrollValue = Input.GetAxis("Mouse ScrollWheel");
         if (scrollValue > 0f && videoCamera.transform.position.y > 50)
         {
-            movimento.y = -1f;
+            movimento.y = -3f;
         }
         else if (scrollValue < 0f && videoCamera.transform.position.y < 250)
         {
-            movimento.y = 1f;
+            movimento.y = 3f;
         }
         else { movimento.y = 0f; }
 
+        float veloc = 70f;
+        if (videoCamera.transform.position.x + (movimento.x * veloc * Time.deltaTime) < 550 && videoCamera.transform.position.x > -220)
+        {
+            videoCamera.transform.position += movimento * veloc * Time.deltaTime;
+        }
 
-        float veloc = 50f;
-        videoCamera.transform.position += movimento * veloc * Time.deltaTime;
 
-        if (Input.GetMouseButtonDown(0))
+
+        //Spostamento visuale della telecamera
+        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(2))
         {
             ruota = true;
             sposMouseIniz = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         }
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(2))
         {
             ruota = false;
         }
@@ -67,11 +73,15 @@ public class MovimentoCamera : MonoBehaviour
 
             rotazione = new Vector3(-(sposMouseFin.y - sposMouseIniz.y) * 0.2f, (sposMouseFin.x - sposMouseIniz.x) * 0.3f, 0);
 
-            videoCamera.transform.eulerAngles = transform.eulerAngles - rotazione;
+            if (videoCamera.transform.eulerAngles.x - rotazione.x < 80 && videoCamera.transform.eulerAngles.x - rotazione.x > 0)
+            {
+                videoCamera.transform.eulerAngles = transform.eulerAngles - rotazione;
+            }
+            
             sposMouseIniz = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         }
 
-
+        
 
 
         ////transform.position = Vector3 videoCamera;

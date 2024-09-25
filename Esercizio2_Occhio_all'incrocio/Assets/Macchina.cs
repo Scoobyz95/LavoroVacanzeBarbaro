@@ -102,17 +102,17 @@ namespace Assets
                 Quaternion vector3;
                 direzione = Vector3.forward;
 
-                if (macchina.transform.eulerAngles.y <= 94 && macchina.transform.eulerAngles.y >= 87)
+                if (macchina.transform.eulerAngles.y <= 98 && macchina.transform.eulerAngles.y >= 83)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
                     
 
                 }
-                else if (macchina.transform.eulerAngles.y <= 184 && macchina.transform.eulerAngles.y >= 177)
+                else if (macchina.transform.eulerAngles.y <= 188 && macchina.transform.eulerAngles.y >= 174)
                 {
                     vector3 = Quaternion.Euler(0, 180, 0);
                 }
-                else if (macchina.transform.eulerAngles.y <= 274 && macchina.transform.eulerAngles.y >= 266)
+                else if (macchina.transform.eulerAngles.y <= 278 && macchina.transform.eulerAngles.y >= 263)
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
