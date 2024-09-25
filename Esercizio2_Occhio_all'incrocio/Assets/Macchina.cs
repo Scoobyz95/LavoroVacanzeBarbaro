@@ -102,17 +102,17 @@ namespace Assets
                 Quaternion vector3;
                 direzione = Vector3.forward;
 
-                if (macchina.transform.eulerAngles.y <= 98 && macchina.transform.eulerAngles.y >= 83)
+                if (macchina.transform.eulerAngles.y <= 110 && macchina.transform.eulerAngles.y >= 76)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
                     
 
                 }
-                else if (macchina.transform.eulerAngles.y <= 188 && macchina.transform.eulerAngles.y >= 174)
+                else if (macchina.transform.eulerAngles.y <= 195 && macchina.transform.eulerAngles.y >= 165)
                 {
                     vector3 = Quaternion.Euler(0, 180, 0);
                 }
-                else if (macchina.transform.eulerAngles.y <= 278 && macchina.transform.eulerAngles.y >= 263)
+                else if (macchina.transform.eulerAngles.y <= 290 && macchina.transform.eulerAngles.y >= 255)
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
@@ -126,7 +126,7 @@ namespace Assets
                 macchina.transform.rotation = vector3;
 
                 //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
-                if (Physics.Raycast(macchina.transform.position, avanti, 4f, layerMaskgiallo))
+                if (Physics.Raycast(macchina.transform.position, avanti, 1f, layerMaskgiallo))
                 {
                     if (timersemafori.Elapsed.TotalSeconds + 4 > tempo * cont)
                     {
@@ -389,7 +389,7 @@ namespace Assets
             }
             else
             {
-                distanza = 30f;
+                distanza = 45f;
             }
 
             if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 4f, layerBastaprecedenza))
