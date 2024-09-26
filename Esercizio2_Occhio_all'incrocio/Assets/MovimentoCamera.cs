@@ -48,10 +48,18 @@ public class MovimentoCamera : MonoBehaviour
         }
         else { movimento.y = 0f; }
 
+
+        //Spostamento
         float veloc = 70f;
-        if (videoCamera.transform.position.x + (movimento.x * veloc * Time.deltaTime) < 550 && videoCamera.transform.position.x > -220)
+        float sposX = videoCamera.transform.position.x + (movimento.x * veloc * Time.deltaTime);
+        float sposZ = videoCamera.transform.position.z + (movimento.z * veloc * Time.deltaTime);
+
+        if (sposX < 550 && sposX > -220 && sposZ < 275 && sposZ > -375)
         {
-            videoCamera.transform.position += movimento * veloc * Time.deltaTime;
+            if ((sposX < 325 || sposZ > -150) && (sposX < 230 || sposZ < 220))
+            {
+                videoCamera.transform.position += movimento * veloc * Time.deltaTime;
+            }
         }
 
 
