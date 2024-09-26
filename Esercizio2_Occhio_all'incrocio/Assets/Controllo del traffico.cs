@@ -55,7 +55,7 @@ public class Controllodeltraffico : MonoBehaviour
     {
         Gestionesemafori();
 
-        if (timersemafori.Elapsed.TotalSeconds + 4 > tempo * cont)
+        if (Time.time + 4 > tempo * cont)
         {
             //il semaforo passa da Verde a Giallo
             if (rossooverde)
@@ -107,7 +107,7 @@ public class Controllodeltraffico : MonoBehaviour
     }
     void Gestionesemafori()
     {
-        if (timersemafori.Elapsed.TotalSeconds > tempo * cont)
+        if (Time.time > tempo * cont)
         {
             cont++;
             foreach (GameObject semaforo in semafori)

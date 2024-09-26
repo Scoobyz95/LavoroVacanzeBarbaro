@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class CicloGiornoNotte : MonoBehaviour
 {
@@ -9,17 +10,22 @@ public class CicloGiornoNotte : MonoBehaviour
     {
         
     }
-
-
     float DurataGiorno = 0f;
-    float DurataNotte = 1200f;
     void Update()
     {
         if (DurataGiorno <= 360)
         {
             DurataGiorno += 0.01f;
             transform.eulerAngles = new Vector3(0, 0, DurataGiorno);
-            DurataNotte = 1200f;
+
+            //if(DurataGiorno >= 200)
+            //{
+            //    Sole.orientation = Quaternion.Euler(0, 90, 0);
+            //}
+            //else
+            //{
+            //    Sole.orientation = Quaternion.Euler(0, 270, 0);
+            //}
         }
         else
         {

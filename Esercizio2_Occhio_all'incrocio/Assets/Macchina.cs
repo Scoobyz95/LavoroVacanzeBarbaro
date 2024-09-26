@@ -52,7 +52,7 @@ namespace Assets
 
             indici = 0;
             scelta = random.Next(1, 4);
-            decisionestop = random.Next(1, 3);
+            decisionestop = random.Next(1, 4);
 
             incrocio = false;
             superatoprimaprecedenza = false;
@@ -78,7 +78,7 @@ namespace Assets
         public void SetScelta()
         {
             scelta = random.Next(1, 4);
-            decisionestop = random.Next(1, 3);
+            decisionestop = random.Next(1, 4);
         }
         public void Azione(int tempo, int cont)
         {
@@ -102,17 +102,17 @@ namespace Assets
                 Quaternion vector3;
                 direzione = Vector3.forward;
 
-                if (macchina.transform.eulerAngles.y <= 110 && macchina.transform.eulerAngles.y >= 76)
+                if (macchina.transform.eulerAngles.y <= 145 && macchina.transform.eulerAngles.y >= 60)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
                     
 
                 }
-                else if (macchina.transform.eulerAngles.y <= 195 && macchina.transform.eulerAngles.y >= 165)
+                else if (macchina.transform.eulerAngles.y <= 230 && macchina.transform.eulerAngles.y >= 145)
                 {
                     vector3 = Quaternion.Euler(0, 180, 0);
                 }
-                else if (macchina.transform.eulerAngles.y <= 290 && macchina.transform.eulerAngles.y >= 255)
+                else if (macchina.transform.eulerAngles.y <= 330 && macchina.transform.eulerAngles.y >= 231)
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
@@ -126,14 +126,17 @@ namespace Assets
                 macchina.transform.rotation = vector3;
 
                 //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
-                if (Physics.Raycast(macchina.transform.position, avanti, 1f, layerMaskgiallo))
+                if (Time.time + 4 > tempo * cont)
                 {
-                    if (timersemafori.Elapsed.TotalSeconds + 4 > tempo * cont)
+                    if (Physics.Raycast(macchina.transform.position, avanti, 4f, layerMaskgiallo))
                     {
-                        Accelera( 10, 30);
+                        Accelera(20, 35);
+                    }
+                    else if (Physics.Raycast(macchina.transform.position, avanti, 8f, layerMaskgiallo))
+                    {
+                        Rallenta(decelerazionesemaforo);
                     }
                 }
-
                 RaycastHit hit;
                 if (Physics.Raycast(macchina.transform.position, avanti, 10f, layerMasknonpassi))
                 {
@@ -389,10 +392,10 @@ namespace Assets
             }
             else
             {
-                distanza = 45f;
+                distanza = 35f;
             }
 
-            if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 4f, layerBastaprecedenza))
+            if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 7f, layerBastaprecedenza))
             {
                 precedenze = null;
             }
@@ -460,7 +463,7 @@ namespace Assets
                         Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
                         macchina.transform.position += Direzione * (velocita + 2) * Time.deltaTime;
                         Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                        macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, (velocita + 2) * Time.deltaTime);
+                        macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, (velocita - 5) * Time.deltaTime);
 
                         if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
                         {
