@@ -5,6 +5,7 @@ using UnityEngine;
 public class AccensioneNotte : MonoBehaviour
 {
     public Light coso;
+    public Light luce;
 
 
     // Start is called before the first frame update
@@ -18,7 +19,11 @@ public class AccensioneNotte : MonoBehaviour
     {
         if(coso.transform.position.z < 170)
         {
-
+            luce.intensity = 3;
+        }
+        else
+        {
+            luce.intensity = 0;
         }
     }
 }
