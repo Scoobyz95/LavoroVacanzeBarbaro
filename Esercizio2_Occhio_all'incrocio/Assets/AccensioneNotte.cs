@@ -1,25 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class AccensioneNotte : MonoBehaviour
 {
-    public Light coso;
-    public Light luce;
+    public GameObject solare;
+    Light luce;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        luce = transform.Find("Luce").GetComponent<Light>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(coso.transform.position.z < 170)
+        if (solare.transform.eulerAngles.z > 165)
         {
-            luce.intensity = 3;
+            luce.intensity = 2.5f;
         }
         else
         {
