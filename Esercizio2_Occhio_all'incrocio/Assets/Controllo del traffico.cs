@@ -13,7 +13,6 @@ public class Controllodeltraffico : MonoBehaviour
     // Start is called before the first frame update
     GameObject[] macchine;
     Macchina[] traffico;
-    Stopwatch timersemafori;
     public List<GameObject> semafori = new List<GameObject>();
 
     // i tipo1 sono verde inizialmente
@@ -23,8 +22,8 @@ public class Controllodeltraffico : MonoBehaviour
     public List<GameObject> semaforitipo2 = new List<GameObject>();
     //diventerà un input
     float limitedivelocita = 8f;
-    float decelerazionesemaforo = 20f;
-    float decelerazioneautodavanti = 30f;
+    float decelerazionesemaforo = 15f;
+    float decelerazioneautodavanti = 50f;
     float accelerazione = 2f;
     System.Random random;
 
@@ -35,12 +34,10 @@ public class Controllodeltraffico : MonoBehaviour
     {
         macchine = GameObject.FindGameObjectsWithTag("Macchine");
         traffico = new Macchina[macchine.Length];       
-        timersemafori = new Stopwatch();
-        timersemafori.Start();
         for (int i = 0; i < macchine.Length; i++)
         {
             macchine[i].name = i.ToString();
-            traffico[i] = new Macchina(macchine[i], timersemafori, decelerazionesemaforo, decelerazioneautodavanti, accelerazione, limitedivelocita, traffico);
+            traffico[i] = new Macchina(macchine[i], decelerazionesemaforo, decelerazioneautodavanti, accelerazione, limitedivelocita, traffico);
         }
        
     }

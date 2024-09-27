@@ -27,6 +27,7 @@ namespace Assets
         bool superatoprimaprecedenza;
         bool fermato;
         bool stacurvando;
+        bool gialloattivo;
 
         Vector3 direzione;
         Vector3 asseruota;
@@ -36,15 +37,14 @@ namespace Assets
         Transform[] precedenzedarisp;
         Macchina[] traffico;
         
-        Stopwatch timersemafori;
         
 
         System.Random random = new System.Random();
 
-        public Macchina(GameObject macchina, Stopwatch timersemafori, float decelerazionesemaforo, float decelerazioneautodavanti, float accelerazione, float limitedivelocita, Macchina[] traffico)
+        public Macchina(GameObject macchina, float decelerazionesemaforo, float decelerazioneautodavanti, float accelerazione, float limitedivelocita, Macchina[] traffico)
         {
             this.macchina = macchina;
-            velocita = 8;
+            velocita = 10;
             this.accelerazione = accelerazione;
             this.limitedivelocita = limitedivelocita;
             this.decelerazionesemaforo = decelerazionesemaforo;
@@ -66,7 +66,6 @@ namespace Assets
             precedenzedarisp = null;
             this.traffico = traffico;
             
-            this.timersemafori = timersemafori;
                   
         }
 
@@ -92,9 +91,10 @@ namespace Assets
 
             // se attraversa il cubo ed è giallo accelerera
             Vector3 avanti = macchina.transform.forward;
+
             if (stacurvando)
             {
-                Curva( traiettorie, precedenzedarisp);
+                Curva( traiettorie, tempo, cont, precedenzedarisp);
 
             }
             else
@@ -105,8 +105,6 @@ namespace Assets
                 if (macchina.transform.eulerAngles.y <= 145 && macchina.transform.eulerAngles.y >= 60)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
-                    
-
                 }
                 else if (macchina.transform.eulerAngles.y <= 230 && macchina.transform.eulerAngles.y >= 145)
                 {
@@ -116,6 +114,7 @@ namespace Assets
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
+
                 else
                 {
                     vector3 = Quaternion.Euler(0, 0, 0);
@@ -124,27 +123,25 @@ namespace Assets
 
                 //macchine[i].transform.Rotate(Vector3.up, differenza);
                 macchina.transform.rotation = vector3;
-
+                RaycastHit hit;
                 //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
                 if (Time.time + 4 > tempo * cont)
                 {
                     if (Physics.Raycast(macchina.transform.position, avanti, 4f, layerMaskgiallo))
                     {
-                        Accelera(20, 35);
+                        Accelera(20, 30);
                     }
-                    else if (Physics.Raycast(macchina.transform.position, avanti, 8f, layerMaskgiallo))
+                    else if (Physics.Raycast(macchina.transform.position, avanti, 12f, layerMaskgiallo))
                     {
                         Rallenta(decelerazionesemaforo);
                     }
-                }
-                RaycastHit hit;
+                }              
+                
                 if (Physics.Raycast(macchina.transform.position, avanti, 10f, layerMasknonpassi))
                 {
-
                     if (velocita > 0)
                         Rallenta(decelerazionesemaforo + 15);
                 }
-
                 else if (Physics.Raycast(macchina.transform.position, avanti, 8f, layerMaskveicolo))
                 {
                     if (velocita > 0)
@@ -167,16 +164,16 @@ namespace Assets
                                     {
                                         traiettoria[j] = traiettoriaconpadre[j + 1];
                                     }
-                                    if (timersemafori.Elapsed.TotalSeconds + 4 >= tempo * cont)
+                                    if (Time.time + 4 >= tempo * cont)
                                     {
-                                        Accelera();
+                                        Accelera(10,10);
                                     }
                                     else
                                     {
                                         stacurvando = true;
                                         incrocio= true;
                                         traiettorie = traiettoria;
-                                        Curva( traiettoria);
+                                        Curva( traiettoria,tempo,cont);
                                     }
                                 }
                                 break;
@@ -199,16 +196,16 @@ namespace Assets
                                         traiettoria[j] = traiettoriaconpadre[j + 1];
                                     }
 
-                                    if (timersemafori.Elapsed.TotalSeconds + 5 > tempo * cont)
+                                    if (Time.time + 6 > tempo * cont)
                                     {
-                                        Accelera();
+                                        Accelera(10,10);
                                     }
                                     else
                                     {
                                         incrocio = true;
                                         stacurvando = true;
                                         traiettorie = traiettoria;
-                                        Curva( traiettoria, precedenze);
+                                        Curva(traiettoria, tempo, cont, precedenze);
                                     }
 
                                 }
@@ -222,7 +219,7 @@ namespace Assets
                         }
                     
                 }
-                else if (Physics.Raycast(macchina.transform.position, avanti, out hit, 5f, layermaskcurvare))
+                else if (Physics.Raycast(macchina.transform.position, avanti, out hit, 8f, layermaskcurvare))
                 {
                     GameObject curva = hit.collider.gameObject;
                     Transform[] traiettoriapadre = curva.transform.GetComponentsInChildren<Transform>();
@@ -235,14 +232,14 @@ namespace Assets
 
                     stacurvando = true;
                     traiettorie = traiettoria;
-                    Curva( traiettoria);
+                    Curva(traiettoria, tempo, cont);
                 }
                 else if (Physics.Raycast(macchina.transform.position, avanti, out hit, 8f, layerMaskStop))
                 {
                     if (!fermato)
                     {
                         if (velocita > 0)
-                            Rallenta( decelerazionesemaforo);
+                            Rallenta( decelerazionesemaforo + 30);
                         else
                         {
                             velocita = 0;
@@ -270,7 +267,7 @@ namespace Assets
 
                                     stacurvando = true;
                                     traiettorie = traiettoria;
-                                    Curva( traiettoria, precedenze);
+                                    Curva(traiettoria, tempo, cont, precedenze);
                                 }
                                 break;
 
@@ -293,7 +290,7 @@ namespace Assets
 
                                     stacurvando = true;
                                     traiettorie = traiettoria;
-                                    Curva( traiettoria, precedenze);
+                                    Curva(traiettoria, tempo, cont, precedenze);
 
                                 }
                                 break;
@@ -318,7 +315,7 @@ namespace Assets
 
                         stacurvando = true;
                         traiettorie = traiettoria;
-                        Curva(traiettoria, precedenze);
+                        Curva(traiettoria, tempo, cont, precedenze);
                     }
 
                 }
@@ -330,13 +327,14 @@ namespace Assets
 
                 if (!stacurvando)
                 {
-                    if (velocita > 8)
+                    if (velocita > 10)
                     {
-                        Rallenta( decelerazionesemaforo);
+                        Rallenta( decelerazionesemaforo + 10);
                     }
                     MovimentoRuota(macchina.transform, velocita * 1000, asseruota);
                     macchina.transform.Translate(direzione * velocita * Time.deltaTime);
                 }
+                gialloattivo = false;
             }
 
         
@@ -379,119 +377,128 @@ namespace Assets
         }
 
         float Distanzamin = 0.5f;
-        public void Curva( Transform[] traiettoria, Transform[] precedenze = null)
+        public void Curva( Transform[] traiettoria, int tempo, int cont,Transform[] precedenze = null)
         {
-            int layermask = 1 << 8;
-            int layerBastaprecedenza = 1 << 14;
-            bool dailaprecedenza = false;
-            float distanza = 0;
-
-            if (incrocio)
+            if (Time.time + 5 > tempo * cont && incrocio && velocita == 0)
             {
-                distanza = 30f;
+                stacurvando = false;
             }
             else
             {
-                distanza = 35f;
-            }
+                int layermask = 1 << 8;
+                int layerBastaprecedenza = 1 << 14;
+                bool dailaprecedenza = false;
+                float distanza = 0;
 
-            if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 7f, layerBastaprecedenza))
-            {
-                precedenze = null;
-            }
-
-
-            if (precedenze != null)
-            {
-                if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 4f, 1 << 12))
+                if (incrocio)
                 {
-                    superatoprimaprecedenza = true;
+                    distanza = 30f;
                 }
-                for (int j = 0; j < precedenze.Length; j++)
+                else
                 {
+                    distanza = 35f;
+                }
 
-                    if (superatoprimaprecedenza)
+                if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 7f, layerBastaprecedenza))
+                {
+                    precedenze = null;
+                }
+
+
+                if (precedenze != null)
+                {
+                    if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 7f, 1 << 12))
                     {
-                        j = 1;
+                        superatoprimaprecedenza = true;
                     }
 
-                    if (j < precedenze.Length)
+                    for (int j = 0; j < precedenze.Length; j++)
                     {
-                        UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, Color.green);
 
-
-                        RaycastHit hit;
-                        Collider myCollider = macchina.GetComponent<Collider>();
-                        UnityEngine.Debug.DrawRay(macchina.transform.position, macchina.transform.forward * 7f, Color.red);
-
-
-                        if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))
+                        if (superatoprimaprecedenza)
                         {
-                            if (hit.collider != myCollider)
-                            {
-                                int k = Int32.Parse(hit.collider.gameObject.name);
+                            j = 1;
+                        }
 
-                                if (incrocio)
+                        if (j < precedenze.Length)
+                        {
+                            UnityEngine.Debug.DrawRay(precedenze[j].position, precedenze[j].right * distanza, Color.green);
+
+
+                            RaycastHit hit;
+                            Collider myCollider = macchina.GetComponent<Collider>();
+                            UnityEngine.Debug.DrawRay(macchina.transform.position, macchina.transform.forward * 7f, Color.red);
+
+
+                            if (Physics.Raycast(precedenze[j].position, precedenze[j].right, out hit, distanza, layermask))
+                            {
+                                if (hit.collider != myCollider)
                                 {
-                                    if (traffico[k].GetScelta() != 2)
+                                    int k = Int32.Parse(hit.collider.gameObject.name);
+
+                                    if (incrocio)
+                                    {
+                                        if (traffico[k].GetScelta() != 2)
+                                        {
+                                            dailaprecedenza = true;
+                                        }
+
+                                    }
+                                    else
                                     {
                                         dailaprecedenza = true;
                                     }
+                                }
 
-                                }
-                                else
-                                {
-                                    dailaprecedenza = true;
-                                }
                             }
-
                         }
                     }
                 }
-            }
 
 
 
-            if (!Physics.Raycast(macchina.transform.position, macchina.transform.forward, 5f, 1 << 8))
-            {
-                if (!dailaprecedenza)
+                if (!Physics.Raycast(macchina.transform.position, macchina.transform.forward, 5f, 1 << 8))
                 {
-                    if (indici < traiettoria.Length)
+                    if (!dailaprecedenza)
                     {
-                        Accelera();
-                        Transform posizionecorrente = traiettoria[indici];
-                        Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
-                        macchina.transform.position += Direzione * (velocita + 2) * Time.deltaTime;
-                        Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                        macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, (velocita - 5) * Time.deltaTime);
-
-                        if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
+                        if (indici < traiettoria.Length)
                         {
-                            //Accelera(i, accelerazione);
-                            indici++;
+                            Accelera();
+                            Transform posizionecorrente = traiettoria[indici];
+                            Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
+                            macchina.transform.position += Direzione * (velocita + 2) * Time.deltaTime;
+                            Quaternion rotazione = Quaternion.LookRotation(Direzione);
+                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 6 * Time.deltaTime);
+
+                            if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
+                            {
+                                //Accelera(i, accelerazione);
+                                indici++;
+                            }
+
+
                         }
-
-
+                        else
+                        {
+                            fermato = false;
+                            precedenzedarisp = null;
+                            stacurvando = false;
+                            superatoprimaprecedenza = false;
+                            incrocio = false;
+                            indici = 0;
+                        }
                     }
                     else
                     {
-                        fermato = false;
-                        precedenzedarisp = null;
-                        stacurvando = false;
-                        superatoprimaprecedenza = false;
-                        incrocio = false;
-                        indici = 0;
+                        velocita = 0;
+
                     }
                 }
                 else
                 {
                     velocita = 0;
-
                 }
-            }
-            else
-            {
-                velocita = 0;
+
             }
 
 
