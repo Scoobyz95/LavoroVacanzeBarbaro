@@ -7,6 +7,8 @@ using UnityEngine.Experimental.GlobalIllumination;
 public class CicloGiornoNotte : MonoBehaviour
 {
     Light sole;
+    float g;
+    float b;
 
     // Start is called before the first frame update
     void Start()
@@ -23,20 +25,27 @@ public class CicloGiornoNotte : MonoBehaviour
         if (DurataGiorno > 0 && DurataGiorno < 180)
         {
             sole.intensity = 1;
-            if (DurataGiorno > 20)
+            if (DurataGiorno > 15)
             {
                 if (DurataGiorno < 160)
                 {
-                    sole.color = new Color(1f, 1f, 1f);
+                    if (g < 1) { g += 0.005f; }
+                    if (b < 1) { b += 0.005f; }
+
+                    sole.color = new Color(1f, g, b);
                 }
                 else
                 {
-                    sole.color = new Color(1f, 0.4f, 0,24f);
+                    if (g > 0.4) { g -= 0.005f; }
+                    if (b > 0.25) { b -= 0.005f; }
+                    sole.color = new Color(1f, g, b);
                 }
             }
             else
             {
-                sole.color = new Color(1f, 0.51f, 0,39f);
+                g = 0.5f;
+                b = 0.4f;
+                sole.color = new Color(1f, g, b);
             }
         }
         else
@@ -44,7 +53,7 @@ public class CicloGiornoNotte : MonoBehaviour
             sole.intensity = 0;
         }
 
-        DurataGiorno += 1f;//0.01f
+        DurataGiorno += 0.05f;//0.01f
         transform.eulerAngles = new Vector3(0, 0, DurataGiorno);
 
 

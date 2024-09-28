@@ -18,7 +18,7 @@ public class AccensioneNotte : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (solare.transform.eulerAngles.z > 165)
+        if (solare.transform.eulerAngles.z > 165 || solare.transform.eulerAngles.z < 8)
         {
             luce.intensity = 2.5f;
         }
