@@ -53,7 +53,7 @@ public class CicloGiornoNotte : MonoBehaviour
             sole.intensity = 0;
         }
 
-        DurataGiorno += 0.05f;//0.01f
+        DurataGiorno += 0.01f;//0.01f
         transform.eulerAngles = new Vector3(0, 0, DurataGiorno);
 
 

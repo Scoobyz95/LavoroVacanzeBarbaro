@@ -102,6 +102,19 @@ namespace Assets
                 Quaternion vector3;
                 direzione = Vector3.forward;
 
+                if (macchina.transform.eulerAngles.y == -90)
+                {
+                    vector3 = Quaternion.Euler(0, 270, 0);
+
+                }else if(macchina.transform.eulerAngles.y == -180)
+                {
+                    vector3 = Quaternion.Euler(0, 0, 0);
+                }
+                else if(macchina.transform.eulerAngles.y == -270)
+                {
+                    vector3 = Quaternion.Euler(0, 90, 0);
+                }
+
                 if (macchina.transform.eulerAngles.y <= 145 && macchina.transform.eulerAngles.y >= 60)
                 {
                     vector3 = Quaternion.Euler(0, 90, 0);
@@ -114,7 +127,6 @@ namespace Assets
                 {
                     vector3 = Quaternion.Euler(0, 270, 0);
                 }
-
                 else
                 {
                     vector3 = Quaternion.Euler(0, 0, 0);
@@ -125,15 +137,16 @@ namespace Assets
                 macchina.transform.rotation = vector3;
                 RaycastHit hit;
                 //UnityEngine.Debug.DrawRay(macchine[i].transform.position, avanti * 14f, UnityEngine.Color.red);
-                if (Time.time + 4 > tempo * cont)
+                if (Time.time + 6 > tempo * cont)
                 {
                     if (Physics.Raycast(macchina.transform.position, avanti, 4f, layerMaskgiallo))
                     {
-                        Accelera(20, 30);
+                        Accelera(40, 40);
+                        gialloattivo = true;
                     }
                     else if (Physics.Raycast(macchina.transform.position, avanti, 12f, layerMaskgiallo))
                     {
-                        Rallenta(decelerazionesemaforo);
+                        Rallenta(decelerazionesemaforo + 30);
                     }
                 }              
                 
@@ -329,7 +342,8 @@ namespace Assets
                 {
                     if (velocita > 10)
                     {
-                        Rallenta( decelerazionesemaforo + 10);
+                        if(!gialloattivo)
+                        Rallenta( decelerazionesemaforo + 40);
                     }
                     MovimentoRuota(macchina.transform, velocita * 1000, asseruota);
                     macchina.transform.Translate(direzione * velocita * Time.deltaTime);
@@ -396,7 +410,7 @@ namespace Assets
                 }
                 else
                 {
-                    distanza = 35f;
+                    distanza = 40f;
                 }
 
                 if (Physics.Raycast(macchina.transform.position, macchina.transform.forward, 7f, layerBastaprecedenza))
@@ -466,9 +480,9 @@ namespace Assets
                             Accelera();
                             Transform posizionecorrente = traiettoria[indici];
                             Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
-                            macchina.transform.position += Direzione * (velocita + 2) * Time.deltaTime;
+                            macchina.transform.position += Direzione * 10 * Time.deltaTime;
                             Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 6 * Time.deltaTime);
+                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 7 * Time.deltaTime);
 
                             if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
                             {
