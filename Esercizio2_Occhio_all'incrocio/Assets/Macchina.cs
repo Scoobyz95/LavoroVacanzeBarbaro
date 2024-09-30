@@ -22,6 +22,7 @@ namespace Assets
         int indici;
         int scelta;
         int decisionestop;
+        float contachilometri;
 
         bool incrocio;
         bool superatoprimaprecedenza;
@@ -44,7 +45,7 @@ namespace Assets
         public Macchina(GameObject macchina, float decelerazionesemaforo, float decelerazioneautodavanti, float accelerazione, float limitedivelocita, Macchina[] traffico)
         {
             this.macchina = macchina;
-            velocita = 10;
+            velocita = 12;
             this.accelerazione = accelerazione;
             this.limitedivelocita = limitedivelocita;
             this.decelerazionesemaforo = decelerazionesemaforo;
@@ -53,6 +54,7 @@ namespace Assets
             indici = 0;
             scelta = random.Next(1, 4);
             decisionestop = random.Next(1, 4);
+            contachilometri = 0;
 
             incrocio = false;
             superatoprimaprecedenza = false;
@@ -65,6 +67,7 @@ namespace Assets
             traiettorie = null;
             precedenzedarisp = null;
             this.traffico = traffico;
+            
             
                   
         }
@@ -146,7 +149,7 @@ namespace Assets
                     }
                     else if (Physics.Raycast(macchina.transform.position, avanti, 12f, layerMaskgiallo))
                     {
-                        Rallenta(decelerazionesemaforo + 30);
+                        Rallenta(decelerazionesemaforo + 60);
                     }
                 }              
                 
@@ -340,16 +343,19 @@ namespace Assets
 
                 if (!stacurvando)
                 {
-                    if (velocita > 10)
+                    if (velocita > 12)
                     {
                         if(!gialloattivo)
-                        Rallenta( decelerazionesemaforo + 40);
+                        Rallenta( decelerazionesemaforo + 50);
                     }
                     MovimentoRuota(macchina.transform, velocita * 1000, asseruota);
                     macchina.transform.Translate(direzione * velocita * Time.deltaTime);
                 }
                 gialloattivo = false;
+
             }
+
+            contachilometri = Time.deltaTime * velocita;
 
         
     }
@@ -482,7 +488,7 @@ namespace Assets
                             Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
                             macchina.transform.position += Direzione * 10 * Time.deltaTime;
                             Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 7 * Time.deltaTime);
+                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 9 * Time.deltaTime);
 
                             if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
                             {
