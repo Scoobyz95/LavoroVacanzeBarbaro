@@ -22,7 +22,7 @@ namespace Assets
         int indici;
         int scelta;
         int decisionestop;
-        float contachilometri;
+        double contachilometri;
 
         bool incrocio;
         bool superatoprimaprecedenza;
@@ -77,11 +77,22 @@ namespace Assets
             return scelta;
         }
 
+        public float GetVelocità()
+        {
+            return (float)Math.Round(velocita, 2);
+        }
+
+        public double GetContaKm()
+        {
+            return contachilometri;
+        }
+
         public void SetScelta()
         {
             scelta = random.Next(1, 4);
             decisionestop = random.Next(1, 4);
         }
+
         public void Azione(int tempo, int cont)
         {
             int layerMaskpassi = 1 << 6;
@@ -98,7 +109,6 @@ namespace Assets
             if (stacurvando)
             {
                 Curva( traiettorie, tempo, cont, precedenzedarisp);
-
             }
             else
             {
@@ -355,10 +365,9 @@ namespace Assets
 
             }
 
-            contachilometri = Time.deltaTime * velocita;
+            contachilometri += Math.Round(Time.deltaTime * velocita, 2);
 
-        
-    }
+        }
 
         public void Rallenta(float decelerazione)
         {

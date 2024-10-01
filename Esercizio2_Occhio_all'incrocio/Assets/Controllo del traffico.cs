@@ -4,15 +4,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Controllodeltraffico : MonoBehaviour
 {
     // Start is called before the first frame update
     GameObject[] macchine;
     Macchina[] traffico;
+    public GameObject videoCamera;
+    bool macchinaCliccata = false;
+    int macchinaSelezionata;
+
     public List<GameObject> semafori = new List<GameObject>();
 
     // i tipo1 sono verde inizialmente
@@ -27,6 +34,8 @@ public class Controllodeltraffico : MonoBehaviour
     float accelerazione = 2f;
     System.Random random;
 
+    public Image info;
+    TMP_Text infoMacchina;
 
     //RAGIONARE SE USARE TRAFFICO OPUURE COLLEGARE LA CLASSE AL GAMEOBJECT (IO CONSIGLIO LA PRIMA)
     // bisogna sistemare la questione degli assi
@@ -39,7 +48,7 @@ public class Controllodeltraffico : MonoBehaviour
             macchine[i].name = i.ToString();
             traffico[i] = new Macchina(macchine[i], decelerazionesemaforo, decelerazioneautodavanti, accelerazione, limitedivelocita, traffico);
         }
-       
+        infoMacchina = info.transform.Find("infoMacchina").GetComponent<TMP_Text>();
     }
 
     int cont = 1;
@@ -100,8 +109,66 @@ public class Controllodeltraffico : MonoBehaviour
         for (int i = 0; i < macchine.Length; i++)
         {
             traffico[i].Azione(tempo, cont);
-        }     
+        }
+
+
+        clickMacchina();
+        if (macchinaCliccata)
+        {
+            Vector3 posMacchina = new Vector3(macchine[macchinaSelezionata].transform.position.x, 25, macchine[macchinaSelezionata].transform.position.z);
+            videoCamera.transform.position = posMacchina;
+
+            Vector3 rotazMacchina = new Vector3(89, macchine[macchinaSelezionata].transform.eulerAngles.y, 0);
+            videoCamera.transform.eulerAngles = rotazMacchina;
+
+
+            infoMacchina.text = "Metri percorsi: " + traffico[macchinaSelezionata].GetContaKm() + "\n\n" + "Velocità attuale: " + traffico[macchinaSelezionata].GetVelocità();
+        }
+
+        if (Input.GetKey(KeyCode.Escape) && macchinaCliccata)
+        {
+            escMacchina();
+        }
     }
+
+
+    public void clickMacchina()
+    {
+        
+        if (Input.GetMouseButtonDown(0) && !macchinaCliccata)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit = new RaycastHit();
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider != null && hit.collider.CompareTag("Macchine"))
+                {
+                    macchinaCliccata = true;
+                    macchinaSelezionata = int.Parse(hit.collider.gameObject.name);
+
+                    UnityEngine.Color coloreInvisibile = info.color;
+                    coloreInvisibile.a = 0.35f;
+                    info.color = coloreInvisibile;
+                }
+            }
+        }
+    }
+
+    void escMacchina()
+    {
+        macchinaCliccata = false;
+        Vector3 res = new Vector3(videoCamera.transform.position.x, 55, videoCamera.transform.position.z);
+        videoCamera.transform.position = res;
+
+        UnityEngine.Color coloreInvisibile = info.color;
+        coloreInvisibile.a = 0;
+        info.color = coloreInvisibile;
+
+        infoMacchina.text = "";
+    }
+
+
     void Gestionesemafori()
     {
         if (Time.time > tempo * cont)

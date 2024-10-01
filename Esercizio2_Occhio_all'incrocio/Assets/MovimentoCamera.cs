@@ -81,7 +81,7 @@ public class MovimentoCamera : MonoBehaviour
 
             rotazione = new Vector3(-(sposMouseFin.y - sposMouseIniz.y) * 0.2f, (sposMouseFin.x - sposMouseIniz.x) * 0.3f, 0);
 
-            if (videoCamera.transform.eulerAngles.x - rotazione.x < 80 && videoCamera.transform.eulerAngles.x - rotazione.x > 0)
+            if (videoCamera.transform.eulerAngles.x - rotazione.x < 90 && videoCamera.transform.eulerAngles.x - rotazione.x > 0)
             {
                 videoCamera.transform.eulerAngles = transform.eulerAngles - rotazione;
             }
