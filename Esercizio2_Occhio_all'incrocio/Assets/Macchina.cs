@@ -84,7 +84,7 @@ namespace Assets
 
         public double GetContaKm()
         {
-            return contachilometri;
+            return Math.Round(contachilometri,2);
         }
 
         public void SetScelta()
@@ -365,7 +365,7 @@ namespace Assets
 
             }
 
-            contachilometri += Math.Round(Time.deltaTime * velocita, 2);
+            contachilometri += Time.deltaTime * velocita;
 
         }
 
@@ -497,7 +497,7 @@ namespace Assets
                             Vector3 Direzione = (posizionecorrente.position - macchina.transform.position).normalized;
                             macchina.transform.position += Direzione * 10 * Time.deltaTime;
                             Quaternion rotazione = Quaternion.LookRotation(Direzione);
-                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 9 * Time.deltaTime);
+                            macchina.transform.rotation = Quaternion.Slerp(macchina.transform.rotation, rotazione, 8 * Time.deltaTime);
 
                             if (Vector3.Distance(macchina.transform.position, traiettoria[indici].position) < Distanzamin)
                             {

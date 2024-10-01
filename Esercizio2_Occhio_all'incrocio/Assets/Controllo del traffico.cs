@@ -28,7 +28,7 @@ public class Controllodeltraffico : MonoBehaviour
     // i tipo2 sono rossi inizialmente
     public List<GameObject> semaforitipo2 = new List<GameObject>();
     //diventerà un input
-    float limitedivelocita = 8f;
+    float limitedivelocita = 12f;
     float decelerazionesemaforo = 15f;
     float decelerazioneautodavanti = 50f;
     float accelerazione = 2f;
