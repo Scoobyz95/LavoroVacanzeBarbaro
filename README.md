@@ -1,7 +1,7 @@
 # Summer Unity Project
 During the summer, our teacher assigned us the task of creating a Unity game from scratch. 
 Using YouTube tutorials and our skills, we developed a small game that simulates a little city. 
-We applied all the fundamentals of Unity to create this game.
+We applied all the fundamentals of Unity to create this game. All the commands are in the file: "USER MANUALE.pdf".
 
 I hope you will enjoy this city😎
 
